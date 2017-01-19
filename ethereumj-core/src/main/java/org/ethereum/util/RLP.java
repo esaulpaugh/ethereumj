@@ -95,7 +95,7 @@ public class RLP {
      * byte with value 0x80 plus the length of the string followed by the
      * string. The range of the first byte is thus [0x80, 0xb7].
      */
-    private static final int OFFSET_SHORT_ITEM = 0x80;
+    static final int OFFSET_SHORT_ITEM = 0x80;
 
     /**
      * [0xb7]
@@ -106,7 +106,7 @@ public class RLP {
      * \xb9\x04\x00 followed by the string. The range of the first byte is thus
      * [0xb8, 0xbf].
      */
-    private static final int OFFSET_LONG_ITEM = 0xb7;
+    static final int OFFSET_LONG_ITEM = 0xb7;
 
     /**
      * [0xc0]
@@ -116,7 +116,7 @@ public class RLP {
      * of the RLP encodings of the items. The range of the first byte is thus
      * [0xc0, 0xf7].
      */
-    private static final int OFFSET_SHORT_LIST = 0xc0;
+    static final int OFFSET_SHORT_LIST = 0xc0;
 
     /**
      * [0xf7]
@@ -126,7 +126,7 @@ public class RLP {
      * followed by the concatenation of the RLP encodings of the items. The
      * range of the first byte is thus [0xf8, 0xff].
      */
-    private static final int OFFSET_LONG_LIST = 0xf7;
+    static final int OFFSET_LONG_LIST = 0xf7;
 
 
     /* ******************************************************
