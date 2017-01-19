@@ -25,7 +25,7 @@ public class RLPItem implements RLPElement {
 
     private final byte[] rlpData;
 
-    public RLPItem(byte[] rlpData) {
+    RLPItem(byte[] rlpData) {
         this.rlpData = rlpData;
     }
 
