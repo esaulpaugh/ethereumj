@@ -8,10 +8,10 @@ import com.sun.org.apache.xerces.internal.impl.dv.util.HexBin;
 public enum ElementType {
 
     SINGLE_BYTE(0, false),
-    ITEM_SHORT(0x80, true),
-    ITEM_LONG(0xb7, false), // 0x80 + 55
-    LIST_SHORT(0xc0, true), // 0xb8 + 8
-    LIST_LONG(0xf7, false); // 0xc0 + 55
+    ITEM_SHORT(0x80, true), // 0x80 + 55 = 0xb7
+    ITEM_LONG(0xb7, false), // 0xb8 + 8 = 0xc0
+    LIST_SHORT(0xc0, true), // 0xc0 + 55 = 0xf7
+    LIST_LONG(0xf7, false);
 
     private final int offset;
     private final boolean isShort;
