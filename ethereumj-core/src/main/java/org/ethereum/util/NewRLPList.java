@@ -11,26 +11,22 @@ public class NewRLPList extends NewRLPElement implements List<NewRLPElement> {
 
     NewRLPList(byte[] data, int index) {
         super(data, index);
-        // TODO
-        this.isShort = new Random().nextBoolean();
-        this.length = -1111111111000000000L;
-
         this.arrayList = new ArrayList<NewRLPElement>();
     }
 
-    public static void recursivePrint(RLPElement element) {
+    public static void recursivePrint(NewRLPElement element) {
 
         if (element == null)
             throw new RuntimeException("RLPElement object can't be null");
-        if (element instanceof RLPList) {
+        if (element instanceof NewRLPList) {
 
-            RLPList rlpList = (RLPList) element;
+            NewRLPList rlpList = (NewRLPList) element;
             System.out.print("[");
-            for (RLPElement singleElement : rlpList)
+            for (NewRLPElement singleElement : rlpList)
                 recursivePrint(singleElement);
             System.out.print("]");
         } else {
-            String hex = ByteUtil.toHexString(element.getRLPData());
+            String hex = ByteUtil.toHexString(element.getData());
             System.out.print(hex + ", ");
         }
     }
