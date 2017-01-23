@@ -22,11 +22,6 @@ public class NewRLPList extends NewRLPElement implements List<NewRLPElement>, Bu
         this.arrayList = new ArrayList<NewRLPElement>();
     }
 
-    NewRLPList(byte[] rlpData, int rlpIndex, ElementType type) {
-        super(rlpData, rlpIndex, type);
-        this.arrayList = new ArrayList<NewRLPElement>();
-    }
-
     @Override
     public NewRLPList build() {
 
@@ -42,11 +37,11 @@ public class NewRLPList extends NewRLPElement implements List<NewRLPElement>, Bu
             case SINGLE_BYTE:
             case ITEM_SHORT:
             case ITEM_LONG:
-                newElement = new NewRLPItem(rlpData, pos, type);
+                newElement = new NewRLPItem(rlpData, pos);
                 break;
             case LIST_SHORT:
             case LIST_LONG:
-                newElement = new NewRLPList(rlpData, pos, type).build();
+                newElement = new NewRLPList(rlpData, pos).build();
                 break;
             default:
                 throw new RuntimeException("???");

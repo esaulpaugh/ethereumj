@@ -13,10 +13,6 @@ public class NewRLPItem extends NewRLPElement {
         super(rlpData, rlpIndex);
     }
 
-    NewRLPItem(byte[] rlpData, int rlpIndex, ElementType type) {
-        super(rlpData, rlpIndex, type);
-    }
-
     @Override
     public byte[] getRLPData() {
         byte[] rlpData = super.getRLPData();
