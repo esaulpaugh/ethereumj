@@ -1,5 +1,6 @@
 package org.ethereum.util;
 
+import java.nio.charset.Charset;
 import java.util.Arrays;
 
 /**
@@ -7,24 +8,18 @@ import java.util.Arrays;
  */
 public abstract class NewRLPElement {
 
-//    private static final Metadata SINGLE_BYTE_METADATA = new Metadata(0, 1);
-
-    private final byte[] rlpData;
-    private final int rlpIndex;
-    private final ElementType type;
+    protected final byte[] rlpData;
+    protected final int rlpIndex;
+    protected final ElementType type;
 
 //    private final InputStream rlpStream;
 //    private final long rlpStreamIndex;
 
-
-//    private final byte[] data;
-//    private final int index;
-
     private final Metadata metadata;
 
-
-//    private final ElementType type;
-//    private final long length;
+    NewRLPElement(byte[] rlpData) {
+        this(rlpData, 0, ElementType.type(rlpData[0]));
+    }
 
     NewRLPElement(byte[] rlpData, int rlpIndex) {
         this(rlpData, rlpIndex, ElementType.type(rlpData[rlpIndex]));
@@ -62,10 +57,10 @@ public abstract class NewRLPElement {
 
     @Override
     public String toString() {
-        return TestUtils.bytesToString(getData());
+        return TestUtils.toChars(getData());
     }
 
-    public void recursivePrint(StringBuilder sb) {
+    protected void recursivePrint(StringBuilder sb) {
 
         if (this instanceof NewRLPList) {
 
@@ -84,7 +79,7 @@ public abstract class NewRLPElement {
         }
     }
 
-    public long getRLPIndex() {
+    public int getRLPIndex() {
         return rlpIndex;
     }
 
@@ -92,7 +87,7 @@ public abstract class NewRLPElement {
         return type;
     }
 
-    public long rlpLength() {
+    public int getRlpLength() {
         return (metadata.dataIndex + metadata.dataLength) - rlpIndex;
     }
 
@@ -147,40 +142,124 @@ public abstract class NewRLPElement {
         int length = 0;
         int shiftAmount = 0;
         switch (lengthOfLength) {
-            case 8:
-                length += (long) rlpData[rlpIndex + 8] << shiftAmount;
-                shiftAmount += Byte.SIZE;
-            case 7:
-                length += (long) rlpData[rlpIndex + 7] << shiftAmount;
-                shiftAmount += Byte.SIZE;
-            case 6:
-                length += (long) rlpData[rlpIndex + 6] << shiftAmount;
-                shiftAmount += Byte.SIZE;
-            case 5:
-                length += (long) rlpData[rlpIndex + 5] << shiftAmount;
-                shiftAmount += Byte.SIZE;
-            case 4:
-                length += (long) rlpData[rlpIndex + 4] << shiftAmount;
-                shiftAmount += Byte.SIZE;
-            case 3:
-                length += (long) rlpData[rlpIndex + 3] << shiftAmount;
-                shiftAmount += Byte.SIZE;
-            case 2:
-                length += (long) rlpData[rlpIndex + 2] << shiftAmount;
-                shiftAmount += Byte.SIZE;
-            case 1:
-                length += (long) rlpData[rlpIndex + 1] << shiftAmount;
+        case 8:
+            length += (long) rlpData[rlpIndex + 8];
+            shiftAmount += Byte.SIZE;
+        case 7:
+            length += (long) rlpData[rlpIndex + 7] << shiftAmount;
+            shiftAmount += Byte.SIZE;
+        case 6:
+            length += (long) rlpData[rlpIndex + 6] << shiftAmount;
+            shiftAmount += Byte.SIZE;
+        case 5:
+            length += (long) rlpData[rlpIndex + 5] << shiftAmount;
+            shiftAmount += Byte.SIZE;
+        case 4:
+            length += (long) rlpData[rlpIndex + 4] << shiftAmount;
+            shiftAmount += Byte.SIZE;
+        case 3:
+            length += (long) rlpData[rlpIndex + 3] << shiftAmount;
+            shiftAmount += Byte.SIZE;
+        case 2:
+            length += (long) rlpData[rlpIndex + 2] << shiftAmount;
+            shiftAmount += Byte.SIZE;
+        case 1:
+            length += (long) rlpData[rlpIndex + 1] << shiftAmount;
         }
         return new Metadata(rlpIndex + 1 + lengthOfLength, length);
+    }
+
+    public static NewRLPElement decode(byte[] rlpData) {
+        return decode(rlpData, 0);
+    }
+
+    public static NewRLPElement decode(byte[] rlpData, int rlpIndex) {
+
+        ElementType type = ElementType.type(rlpData[rlpIndex]);
+        switch (type) {
+        case SINGLE_BYTE:
+        case ITEM_SHORT:
+        case ITEM_LONG:
+            return new NewRLPItem(rlpData, rlpIndex, type);
+        case LIST_SHORT:
+        case LIST_LONG:
+            return new NewRLPList(rlpData, rlpIndex, type).build();
+        default:
+            throw new RuntimeException("???");
+        }
+    }
+
+    public static NewRLPElement encodeString(String string, Charset charset) {
+        return encodeString(string.getBytes(charset));
+    }
+
+    public static NewRLPElement encodeString(byte[] data) {
+
+        final ElementType type;
+        if(data.length > 55) {
+            type = ElementType.ITEM_LONG;
+            byte[] lengthBytes = ByteUtil.intToBytesNoLeadZeroes(data.length);
+
+            byte[] rlpData = new byte[1 + lengthBytes.length + data.length];
+            rlpData[0] = (byte) (type.getOffset() + lengthBytes.length);
+            System.arraycopy(lengthBytes, 0, rlpData, 1, lengthBytes.length);
+            System.arraycopy(data, 0, rlpData, 1 + lengthBytes.length, data.length);
+
+            return new NewRLPItem(rlpData, 0, type);
+        }
+
+        type = ElementType.ITEM_SHORT;
+
+        byte[] rlpData = new byte[1 + data.length];
+        rlpData[0] = (byte) (type.getOffset() + data.length);
+        System.arraycopy(data, 0, rlpData, 1, data.length);
+
+        return new NewRLPItem(rlpData, 0, type);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+
+        if(!(obj instanceof NewRLPItem)) {
+            return false;
+        }
+
+        NewRLPItem other = (NewRLPItem) obj;
+
+        final int end = rlpIndex + getRlpLength();
+        for (int i = rlpIndex, _i = other.rlpIndex; i < end; i++, _i++) {
+            if(rlpData[i] != other.rlpData[_i]) {
+                return false;
+            }
+        }
+
+        return true;
+
+//        return Arrays.equals(other.getRLPData(), getRLPData());
+    }
+
+    /**
+     * @see Arrays#hashCode(byte[])
+     * @return
+     */
+    @Override
+    public int hashCode() {
+
+        int result = 1;
+        final int len = getRlpLength();
+        for (int i = rlpIndex; i < len; i++)
+            result = 31 * result + rlpData[i];
+
+        return result;
     }
 
     private static final class Metadata {
 //        private final long rlpIndex;
 //        private final ElementType type;
-        private final long dataIndex;
-        private final long dataLength;
+        private final int dataIndex;
+        private final int dataLength;
 
-        private Metadata(long dataIndex, long dataLength) {
+        private Metadata(int dataIndex, int dataLength) {
 //            this.rlpIndex = rlpIndex;
 //            this.type = type;
             this.dataIndex = dataIndex;

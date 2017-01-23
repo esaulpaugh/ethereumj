@@ -26,20 +26,28 @@ public class TestUtils {
         sr.nextBytes(bytes);
     }
 
-    public static String bytesToString(byte... bytes) {
+    public static String toChars(byte... bytes) {
         StringBuilder sb = new StringBuilder();
         for (byte b : bytes) {
             sb.append((char) b);
-//                    .append(", ");
         }
-//        if(bytes.length > 0) {
-//            sb.replace(sb.length() - 2, sb.length(), "");
-//        }
         return sb.toString();
     }
 
-    public static void print(byte... bytes) {
-        System.out.println(bytesToString(bytes));
+    public static void printBytes(byte... bytes) {
+        StringBuilder sb = new StringBuilder();
+        for (byte b : bytes) {
+            sb.append(b)
+                    .append(", ");
+        }
+        if(bytes.length > 0) {
+            sb.replace(sb.length() - 2, sb.length(), "");
+        }
+        System.out.println(sb.toString());
+    }
+
+    public static void printChars(byte... bytes) {
+        System.out.println(toChars(bytes));
     }
 
     public static String base64(byte[] bytes) {

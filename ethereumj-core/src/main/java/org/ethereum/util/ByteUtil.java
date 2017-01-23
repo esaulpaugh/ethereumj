@@ -179,22 +179,22 @@ public class ByteUtil {
 
         if (val == 0) return EMPTY_BYTE_ARRAY;
 
-        int lenght = 0;
+        int len = 0;
 
         int tmpVal = val;
-        while (tmpVal != 0){
+        while (tmpVal != 0) {
+            len++;
             tmpVal = tmpVal >>> 8;
-            ++lenght;
         }
 
-        byte[] result = new byte[lenght];
+        byte[] result = new byte[len];
 
         int index = result.length - 1;
         while(val != 0){
 
-            result[index] = (byte)(val & 0xFF);
+            result[index] = (byte) (val & 0xFF);
             val = val >>> 8;
-            index -= 1;
+            index--;
         }
 
         return result;
