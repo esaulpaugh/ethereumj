@@ -169,8 +169,8 @@ public class ByteUtil {
         return ByteBuffer.allocate(Integer.BYTES).putInt(val).array();
     }
 
-    public static int intByteLengthNoLeadZeroes(int val) {
-        int len = 0;
+    public static byte byteLengthNoLeadZeroes(int val) {
+        byte len = 0;
         while (val != 0) {
             len++;
             val = val >>> 8;

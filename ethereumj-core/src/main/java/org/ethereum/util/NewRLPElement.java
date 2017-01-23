@@ -1,5 +1,8 @@
 package org.ethereum.util;
 
+import org.apache.commons.lang3.concurrent.ConcurrentException;
+import org.apache.commons.lang3.concurrent.LazyInitializer;
+
 import java.nio.charset.Charset;
 import java.util.Arrays;
 
@@ -8,28 +11,37 @@ import java.util.Arrays;
  */
 public abstract class NewRLPElement {
 
+    private static final int LONG_DATA_THRESHOLD = 56;
+
     protected final byte[] rlpData;
     protected final int rlpIndex;
-    protected final ElementType type;
+//    protected final ElementType type;
 
 //    private final InputStream rlpStream;
 //    private final long rlpStreamIndex;
 
-    private final Metadata metadata;
+    private final LazyInitializer<Metadata> lazyMetadata = new LazyInitializer<Metadata>() {
+        @Override
+        protected Metadata initialize() throws ConcurrentException {
+            return deriveMetadata();
+        }
+    };
 
     NewRLPElement(byte[] rlpData) {
-        this(rlpData, 0, ElementType.type(rlpData[0]));
+        this(rlpData, 0);
     }
+
+//     ElementType.type(rlpData[0])
+
+//    NewRLPElement(byte[] rlpData, int rlpIndex) {
+//        this(rlpData, rlpIndex, ElementType.type(rlpData[rlpIndex]));
+//    }
 
     NewRLPElement(byte[] rlpData, int rlpIndex) {
-        this(rlpData, rlpIndex, ElementType.type(rlpData[rlpIndex]));
-    }
-
-    NewRLPElement(byte[] rlpData, int rlpIndex, ElementType type) {
         this.rlpData = rlpData;
         this.rlpIndex = rlpIndex;
-        this.type = type;
-        this.metadata = decodeMetadata();
+//        this.type = type;
+//        this.metadata = decodeMetadata();
     }
 
     public byte[] getRLPData() {
@@ -40,33 +52,43 @@ public abstract class NewRLPElement {
         return rlpIndex;
     }
 
-    public ElementType getType() {
-        return type;
-    }
-
-    public int getRlpLength() {
-        return (metadata.dataIndex + metadata.dataLength) - rlpIndex;
-    }
-
-    public long getDataIndex() {
-        return metadata.dataIndex;
-    }
-
-    public long getDataLength() {
-        return metadata.dataLength;
-    }
-
-    public byte getByte(int rlpIndex) {
-        return rlpData[rlpIndex];
+    private Metadata getMetadata() {
+        try {
+            return lazyMetadata.get();
+        } catch (ConcurrentException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public byte[] getData() {
+        Metadata metadata = getMetadata();
         long idx = metadata.dataIndex;
         long len = metadata.dataLength;
         if(idx + len > Integer.MAX_VALUE - 100) {
             throw new ArrayIndexOutOfBoundsException(String.valueOf(idx + len));
         }
         return Arrays.copyOfRange(rlpData, (int) idx, (int) (idx + len));
+    }
+
+    public ElementType getType() {
+        return getMetadata().type;
+    }
+
+    public int getRlpLength() {
+        Metadata metadata = getMetadata();
+        return (metadata.dataIndex + metadata.dataLength) - rlpIndex;
+    }
+
+    public long getDataIndex() {
+        return getMetadata().dataIndex;
+    }
+
+    public long getDataLength() {
+        return getMetadata().dataLength;
+    }
+
+    public byte getByte(int rlpIndex) {
+        return rlpData[rlpIndex];
     }
 
 //    private static Metadata decodeMetadata(InputStream rlpStream) throws IOException {
@@ -78,49 +100,6 @@ public abstract class NewRLPElement {
 //        byte byteZero = firstNine[0];
 //        return decodeMetadata(firstNine, 0);
 //    }
-
-    private Metadata decodeMetadata() {
-
-        if(type == ElementType.SINGLE_BYTE) {
-            return new Metadata(rlpIndex, 1);
-        }
-
-        final int byteZero = getByte(rlpIndex) & 0xFF;
-
-        if(type.isShort()) {
-            return new Metadata(rlpIndex + 1, byteZero - type.getOffset());
-        }
-
-        int lengthOfLength = byteZero - type.getOffset();
-        int length = 0;
-        int shiftAmount = 0;
-        switch (lengthOfLength) {
-        case 8:
-            length += (long) rlpData[rlpIndex + 8];
-            shiftAmount += Byte.SIZE;
-        case 7:
-            length += (long) rlpData[rlpIndex + 7] << shiftAmount;
-            shiftAmount += Byte.SIZE;
-        case 6:
-            length += (long) rlpData[rlpIndex + 6] << shiftAmount;
-            shiftAmount += Byte.SIZE;
-        case 5:
-            length += (long) rlpData[rlpIndex + 5] << shiftAmount;
-            shiftAmount += Byte.SIZE;
-        case 4:
-            length += (long) rlpData[rlpIndex + 4] << shiftAmount;
-            shiftAmount += Byte.SIZE;
-        case 3:
-            length += (long) rlpData[rlpIndex + 3] << shiftAmount;
-            shiftAmount += Byte.SIZE;
-        case 2:
-            length += (long) rlpData[rlpIndex + 2] << shiftAmount;
-            shiftAmount += Byte.SIZE;
-        case 1:
-            length += (long) rlpData[rlpIndex + 1] << shiftAmount;
-        }
-        return new Metadata(rlpIndex + 1 + lengthOfLength, length);
-    }
 
     public static NewRLPItem decodeItem(byte[] rlpData) {
         return (NewRLPItem) decode(rlpData, 0);
@@ -141,10 +120,10 @@ public abstract class NewRLPElement {
         case SINGLE_BYTE:
         case ITEM_SHORT:
         case ITEM_LONG:
-            return new NewRLPItem(rlpData, rlpIndex, type);
+            return new NewRLPItem(rlpData, rlpIndex);
         case LIST_SHORT:
         case LIST_LONG:
-            return new NewRLPList(rlpData, rlpIndex, type).build();
+            return new NewRLPList(rlpData, rlpIndex).build();
         default:
             throw new RuntimeException("???");
         }
@@ -155,7 +134,7 @@ public abstract class NewRLPElement {
     }
 
     public static NewRLPItem encodeString(byte[] data) {
-        return (NewRLPItem) encode(data, false);
+        return (NewRLPItem) _encode(false, data);
 
 //        final ElementType type;
 //        if(data.length > 55) {
@@ -179,38 +158,80 @@ public abstract class NewRLPElement {
 //        return new NewRLPItem(rlpData, 0, type);
     }
 
-    public static NewRLPElement encode(byte[] data, boolean list) {
+    public static NewRLPElement encodeList(byte[]... arrays) {
+        return _encode(true, arrays);
+    }
+
+    private static NewRLPElement _encode(boolean list, byte[]... arrays) {
+
         ElementType type;
         byte[] rlpData;
-        final int dataLen = data.length;
-        if(dataLen > 55) {
-            type = list
-                    ? ElementType.LIST_LONG
-                    : ElementType.ITEM_LONG;
+        if (arrays == null) {
+            type = ElementType.LIST_SHORT;
+            rlpData = new byte[] { (byte) type.getOffset() };
+        } else {
 
-            final int lengthLen = ByteUtil.intByteLengthNoLeadZeroes(dataLen);
+            int dataLen = 0;
+            for (byte[] arr : arrays) {
+                dataLen += arr.length;
+            }
+
+            int destPos;
+
+            // TODO test size one array encoded as single item and as short list
+            if (dataLen < LONG_DATA_THRESHOLD){
+                type = list
+                        ? ElementType.LIST_SHORT
+                        : ElementType.ITEM_SHORT;
+
+                rlpData = new byte[1 + dataLen];
+                rlpData[0] = (byte) (type.getOffset() + dataLen);
+                destPos = 1;
+
+//                System.arraycopy(data, 0, rlpData, 1, dataLen);
+            } else {
+                if(dataLen == 1 && !list) {
+                    byte single = 0;
+                    for (byte[] arr : arrays) {
+                        if(arr.length > 0) {
+                            single = arr[0];
+                            break;
+                        }
+                    }
+
+                    if(single < (byte) 0x80) {
+                        return new NewRLPItem(new byte[] { single }, 0);
+                    }
+                }
+
+                type = list
+                        ? ElementType.LIST_LONG
+                        : ElementType.ITEM_LONG;
+
+                final int lengthLen = ByteUtil.byteLengthNoLeadZeroes(dataLen);
 
 //            byte[] lengthBytes = ByteUtil.intToBytesNoLeadZeroes(dataLen);
 //            final int lengthLen = lengthBytes.length;
 
-            rlpData = new byte[1 + lengthLen + dataLen];
-            rlpData[0] = (byte) (type.getOffset() + lengthLen);
+                rlpData = new byte[1 + lengthLen + dataLen];
+                rlpData[0] = (byte) (type.getOffset() + lengthLen);
 //            System.arraycopy(lengthBytes, 0, rlpData, 1, lengthLen);
-            ByteUtil.insertInt(rlpData, dataLen, lengthLen);
-            System.arraycopy(data, 0, rlpData, 1 + lengthLen, dataLen);
-        } else {
-            type = list
-                    ? ElementType.LIST_SHORT
-                    : ElementType.ITEM_SHORT;
+                ByteUtil.insertInt(rlpData, dataLen, lengthLen);
 
-            rlpData = new byte[1 + dataLen];
-            rlpData[0] = (byte) (type.getOffset() + dataLen);
-            System.arraycopy(data, 0, rlpData, 1, dataLen);
+                destPos = 1 + lengthLen;
+
+//                System.arraycopy(data, 0, rlpData, 1 + lengthLen, dataLen);
+            }
+
+            for (byte[] element : arrays) {
+                System.arraycopy(element, 0, element, destPos, element.length);
+                destPos += element.length;
+            }
         }
 
         return list
-                ? new NewRLPList(rlpData, 0, type)
-                : new NewRLPItem(rlpData, 0, type);
+                ? new NewRLPList(rlpData, 0)
+                : new NewRLPItem(rlpData, 0);
     }
 
     protected void recursivePrint(StringBuilder sb) {
@@ -266,18 +287,65 @@ public abstract class NewRLPElement {
         return result;
     }
 
-    private static final class Metadata {
-        private final int dataIndex;
-        private final int dataLength;
-
-        private Metadata(int dataIndex, int dataLength) {
-            this.dataIndex = dataIndex;
-            this.dataLength = dataLength;
-        }
-    }
-
     @Override
     public String toString() {
         return TestUtils.toChars(getData()); // TODO decouple from TestUtils
+    }
+
+    private Metadata deriveMetadata() {
+
+        final ElementType type = getType();
+
+        if(type == ElementType.SINGLE_BYTE) {
+            return new Metadata(type, rlpIndex, 1);
+        }
+
+        final int byteZero = getByte(rlpIndex) & 0xFF;
+
+        if(type.isShort()) {
+            return new Metadata(type, rlpIndex + 1, byteZero - type.getOffset());
+        }
+
+        int lengthOfLength = byteZero - type.getOffset();
+        int length = 0;
+        int shiftAmount = 0;
+        switch (lengthOfLength) {
+        case 8:
+            length += (long) rlpData[rlpIndex + 8];
+            shiftAmount += Byte.SIZE;
+        case 7:
+            length += (long) rlpData[rlpIndex + 7] << shiftAmount;
+            shiftAmount += Byte.SIZE;
+        case 6:
+            length += (long) rlpData[rlpIndex + 6] << shiftAmount;
+            shiftAmount += Byte.SIZE;
+        case 5:
+            length += (long) rlpData[rlpIndex + 5] << shiftAmount;
+            shiftAmount += Byte.SIZE;
+        case 4:
+            length += (long) rlpData[rlpIndex + 4] << shiftAmount;
+            shiftAmount += Byte.SIZE;
+        case 3:
+            length += (long) rlpData[rlpIndex + 3] << shiftAmount;
+            shiftAmount += Byte.SIZE;
+        case 2:
+            length += (long) rlpData[rlpIndex + 2] << shiftAmount;
+            shiftAmount += Byte.SIZE;
+        case 1:
+            length += (long) rlpData[rlpIndex + 1] << shiftAmount;
+        }
+        return new Metadata(type, rlpIndex + 1 + lengthOfLength, length);
+    }
+
+    private static final class Metadata {
+        private final ElementType type;
+        private final int dataIndex;
+        private final int dataLength;
+
+        private Metadata(ElementType type, int dataIndex, int dataLength) {
+            this.type = type;
+            this.dataIndex = dataIndex;
+            this.dataLength = dataLength;
+        }
     }
 }
