@@ -14,8 +14,6 @@ import java.util.ListIterator;
  */
 public class NewRLPList extends NewRLPElement implements List<NewRLPElement>, Buildable<NewRLPList> {
 
-    private ArrayList<NewRLPElement> arrayList;
-
     private final LazyInitializer<ArrayList<NewRLPElement>> lazyArrayList;
 
     NewRLPList(byte[] rlpData) {
@@ -79,120 +77,128 @@ public class NewRLPList extends NewRLPElement implements List<NewRLPElement>, Bu
         return (NewRLPList) get(index);
     }
 
+    public ArrayList<NewRLPElement> getArrayList() {
+        try {
+            return lazyArrayList.get();
+        } catch (ConcurrentException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     // --- List implementation ---
 
     @Override
     public int size() {
-        return arrayList.size();
+        return getArrayList().size();
     }
 
     @Override
     public boolean isEmpty() {
-        return arrayList.isEmpty();
+        return getArrayList().isEmpty();
     }
 
     @Override
     public boolean contains(Object o) {
-        return arrayList.contains(o);
+        return getArrayList().contains(o);
     }
 
     @Override
     public Iterator<NewRLPElement> iterator() {
-        return arrayList.iterator();
+        return getArrayList().iterator();
     }
 
     @Override
     public Object[] toArray() {
-        return arrayList.toArray();
+        return getArrayList().toArray();
     }
 
     @Override
     public <T> T[] toArray(T[] a) {
-        return arrayList.toArray(a);
+        return getArrayList().toArray(a);
     }
 
     @Override
     public boolean add(NewRLPElement newRLPElement) {
-        return arrayList.add(newRLPElement);
+        return getArrayList().add(newRLPElement);
     }
 
     @Override
     public boolean remove(Object o) {
-        return arrayList.remove(o);
+        return getArrayList().remove(o);
     }
 
     @Override
     public boolean containsAll(Collection<?> c) {
-        return arrayList.containsAll(c);
+        return getArrayList().containsAll(c);
     }
 
     @Override
     public boolean addAll(Collection<? extends NewRLPElement> c) {
-        return arrayList.addAll(c);
+        return getArrayList().addAll(c);
     }
 
     @Override
     public boolean addAll(int index, Collection<? extends NewRLPElement> c) {
-        return arrayList.addAll(index, c);
+        return getArrayList().addAll(index, c);
     }
 
     @Override
     public boolean removeAll(Collection<?> c) {
-        return arrayList.removeAll(c);
+        return getArrayList().removeAll(c);
     }
 
     @Override
     public boolean retainAll(Collection<?> c) {
-        return arrayList.retainAll(c);
+        return getArrayList().retainAll(c);
     }
 
     @Override
     public void clear() {
-        arrayList.clear();
+        getArrayList().clear();
     }
 
     @Override
     public NewRLPElement get(int index) {
-        return arrayList.get(index);
+        return getArrayList().get(index);
     }
 
     @Override
     public NewRLPElement set(int index, NewRLPElement element) {
-        return arrayList.set(index, element);
+        return getArrayList().set(index, element);
     }
 
     @Override
     public void add(int index, NewRLPElement element) {
-        arrayList.add(index, element);
+        getArrayList().add(index, element);
     }
 
     @Override
     public NewRLPElement remove(int index) {
-        return arrayList.remove(index);
+        return getArrayList().remove(index);
     }
 
     @Override
     public int indexOf(Object o) {
-        return arrayList.indexOf(o);
+        return getArrayList().indexOf(o);
     }
 
     @Override
     public int lastIndexOf(Object o) {
-        return arrayList.lastIndexOf(o);
+        return getArrayList().lastIndexOf(o);
     }
 
     @Override
     public ListIterator<NewRLPElement> listIterator() {
-        return arrayList.listIterator();
+        return getArrayList().listIterator();
     }
 
     @Override
     public ListIterator<NewRLPElement> listIterator(int index) {
-        return arrayList.listIterator(index);
+        return getArrayList().listIterator(index);
     }
 
     @Override
     public List<NewRLPElement> subList(int fromIndex, int toIndex) {
-        return arrayList.subList(fromIndex, toIndex);
+        return getArrayList().subList(fromIndex, toIndex);
     }
 }
