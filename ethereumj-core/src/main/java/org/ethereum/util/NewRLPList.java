@@ -66,6 +66,14 @@ public class NewRLPList extends NewRLPElement implements List<NewRLPElement>, Bu
         return sb.toString();
     }
 
+    public NewRLPItem getItem(int index) {
+        return (NewRLPItem) get(index);
+    }
+
+    public NewRLPList getList(int index) {
+        return (NewRLPList) get(index);
+    }
+
     // --- List implementation ---
 
     @Override

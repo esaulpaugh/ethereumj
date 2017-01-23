@@ -169,6 +169,24 @@ public class ByteUtil {
         return ByteBuffer.allocate(Integer.BYTES).putInt(val).array();
     }
 
+    public static int intByteLengthNoLeadZeroes(int val) {
+        int len = 0;
+        while (val != 0) {
+            len++;
+            val = val >>> 8;
+        }
+        return len;
+    }
+
+    public static void insertInt(byte[] buffer, int val, int byteLen) {
+        int index = byteLen - 1;
+        while(val != 0) {
+            buffer[index] = (byte) (val & 0xFF);
+            val = val >>> 8;
+            index--;
+        }
+    }
+
     /**
      * Converts a int value into a byte array.
      *
