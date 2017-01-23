@@ -1,5 +1,8 @@
 package org.ethereum.util;
 
+import org.apache.commons.lang3.concurrent.ConcurrentException;
+import org.apache.commons.lang3.concurrent.LazyInitializer;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -13,13 +16,20 @@ public class NewRLPList extends NewRLPElement implements List<NewRLPElement>, Bu
 
     private ArrayList<NewRLPElement> arrayList;
 
+    private final LazyInitializer<ArrayList<NewRLPElement>> lazyArrayList;
+
     NewRLPList(byte[] rlpData) {
         this(rlpData, 0);
     }
 
     NewRLPList(byte[] rlpData, int rlpIndex) {
         super(rlpData, rlpIndex);
-        this.arrayList = new ArrayList<NewRLPElement>();
+        this.lazyArrayList = new LazyInitializer<ArrayList<NewRLPElement>>() {
+            @Override
+            protected ArrayList<NewRLPElement> initialize() throws ConcurrentException {
+                return new ArrayList<NewRLPElement>();
+            }
+        };
     }
 
     @Override

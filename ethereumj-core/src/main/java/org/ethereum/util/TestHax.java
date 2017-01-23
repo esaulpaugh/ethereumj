@@ -1,6 +1,9 @@
 package org.ethereum.util;
 
+import java.math.BigInteger;
 import java.nio.charset.Charset;
+
+import static org.spongycastle.util.BigIntegers.asUnsignedByteArray;
 
 /**
  * Created by esaulpaugh on 1/22/17.
@@ -23,6 +26,17 @@ public class TestHax {
 
     public static void main(String[] args0) {
 
+
+        TestUtils.printBytes(RLP.encodeElement(asUnsignedByteArray(BigInteger.ZERO)));
+
+        TestUtils.printBytes(RLP.encodeByte((byte) 0));
+
+
+
+
+
+
+
         byte[][] arrays = new byte[][]{
                 singleByte,
                 shortString,
@@ -38,7 +52,7 @@ public class TestHax {
         }
 
         NewRLPElement a = NewRLPElement.decode(shortString);
-        NewRLPElement b = NewRLPElement.encodeString("wew", Charset.forName("UTF-8"));
+        NewRLPElement b = NewRLPElement.encodeItem("wew", Charset.forName("UTF-8"));
 
         System.out.println(a.toString());
         System.out.println(b.toString());

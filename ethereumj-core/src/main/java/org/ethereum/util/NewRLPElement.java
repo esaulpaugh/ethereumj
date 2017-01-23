@@ -20,12 +20,7 @@ public abstract class NewRLPElement {
 //    private final InputStream rlpStream;
 //    private final long rlpStreamIndex;
 
-    private final LazyInitializer<Metadata> lazyMetadata = new LazyInitializer<Metadata>() {
-        @Override
-        protected Metadata initialize() throws ConcurrentException {
-            return deriveMetadata();
-        }
-    };
+    private final LazyInitializer<Metadata> lazyMetadata;
 
     NewRLPElement(byte[] rlpData) {
         this(rlpData, 0);
@@ -40,6 +35,12 @@ public abstract class NewRLPElement {
     NewRLPElement(byte[] rlpData, int rlpIndex) {
         this.rlpData = rlpData;
         this.rlpIndex = rlpIndex;
+        this.lazyMetadata = new LazyInitializer<Metadata>() {
+            @Override
+            protected Metadata initialize() throws ConcurrentException {
+                return deriveMetadata();
+            }
+        };
 //        this.type = type;
 //        this.metadata = decodeMetadata();
     }
@@ -129,11 +130,11 @@ public abstract class NewRLPElement {
         }
     }
 
-    public static NewRLPItem encodeString(String string, Charset charset) {
-        return encodeString(string.getBytes(charset));
+    public static NewRLPItem encodeItem(String string, Charset charset) {
+        return encodeItem(string.getBytes(charset));
     }
 
-    public static NewRLPItem encodeString(byte[] data) {
+    public static NewRLPItem encodeItem(byte[] data) {
         return (NewRLPItem) _encode(false, data);
 
 //        final ElementType type;
