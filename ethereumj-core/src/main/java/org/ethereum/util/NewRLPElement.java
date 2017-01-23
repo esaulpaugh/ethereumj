@@ -223,8 +223,8 @@ public abstract class NewRLPElement {
 //                System.arraycopy(data, 0, rlpData, 1 + lengthLen, dataLen);
             }
 
-            for (byte[] element : arrays) {
-                System.arraycopy(element, 0, element, destPos, element.length);
+            for (final byte[] element : arrays) {
+                System.arraycopy(element, 0, rlpData, destPos, element.length);
                 destPos += element.length;
             }
         }
@@ -294,7 +294,7 @@ public abstract class NewRLPElement {
 
     private Metadata deriveMetadata() {
 
-        final ElementType type = getType();
+        final ElementType type = ElementType.type(rlpData[rlpIndex]);
 
         if(type == ElementType.SINGLE_BYTE) {
             return new Metadata(type, rlpIndex, 1);
