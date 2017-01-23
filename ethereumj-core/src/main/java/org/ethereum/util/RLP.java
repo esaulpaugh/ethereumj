@@ -559,7 +559,7 @@ public class RLP {
     /**
      * Get exactly one message payload
      */
-    private static void fullTraverse(byte[] msgData, int level, int startPos,
+    static void fullTraverse(byte[] msgData, int level, int startPos,
                                      int endPos, int levelToIndex, RLPList rlpList) {
 
         try {

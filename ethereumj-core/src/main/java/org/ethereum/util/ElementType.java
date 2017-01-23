@@ -1,7 +1,5 @@
 package org.ethereum.util;
 
-import com.sun.org.apache.xerces.internal.impl.dv.util.HexBin;
-
 /**
  * Created by esaulpaugh on 1/19/17.
  */
@@ -42,15 +40,15 @@ public enum ElementType {
         return LIST_LONG;
     }
 
-    public static void testPrint() {
-        StringBuilder sb = new StringBuilder();
-
-        for(int i = 0; i < 256; i++) {
-            byte value = (byte) i;
-            sb.append(HexBin.encode(new byte[]{value})).append(" ");
-            sb.append(ElementType.type(value)).append("\n");
-        }
-
-        System.out.println(sb.toString());
-    }
+//    public static void testPrint() {
+//        StringBuilder sb = new StringBuilder();
+//
+//        for(int i = 0; i < 256; i++) {
+//            byte value = (byte) i;
+//            sb.append(HexBin.encode(new byte[]{value})).append(" ");
+//            sb.append(ElementType.type(value)).append("\n");
+//        }
+//
+//        System.out.println(sb.toString());
+//    }
 }

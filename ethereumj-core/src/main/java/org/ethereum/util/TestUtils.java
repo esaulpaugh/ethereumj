@@ -2,8 +2,8 @@ package org.ethereum.util;
 
 import java.security.SecureRandom;
 
-import com.sun.org.apache.xml.internal.security.exceptions.Base64DecodingException;
-import com.sun.org.apache.xml.internal.security.utils.Base64;
+//import com.sun.org.apache.xml.internal.security.exceptions.Base64DecodingException;
+//import com.sun.org.apache.xml.internal.security.utils.Base64;
 
 /**
  * Created by esaulpaugh on 1/20/17.
@@ -50,12 +50,12 @@ public class TestUtils {
         System.out.println(toChars(bytes));
     }
 
-    public static String base64(byte[] bytes) {
-        return Base64.encode(bytes, Integer.MAX_VALUE);
-    }
-
-    public static byte[] decodeBase64(String encoded) throws Base64DecodingException {
-        return Base64.decode(encoded);
-    }
+//    public static String base64(byte[] bytes) {
+//        return Base64.encode(bytes, Integer.MAX_VALUE);
+//    }
+//
+//    public static byte[] decodeBase64(String encoded) throws Base64DecodingException {
+//        return Base64.decode(encoded);
+//    }
 
 }

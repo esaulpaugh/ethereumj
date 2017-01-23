@@ -32,51 +32,8 @@ public abstract class NewRLPElement {
         this.metadata = decodeMetadata();
     }
 
-//    NewRLPElement(InputStream rlpStream) throws IOException { // TODO
-//        this.rlpData = null;
-//        this.rlpStream = rlpStream;
-//
-//        this.metadata = decodeMetadata(rlpStream);
-//
-////        this.index = 0;
-////        stream.mark(9);
-////        final byte byteZero = (byte) stream.read();
-////        stream.reset();
-////        this.type = ElementType.type(byteZero);
-////        this.length = decodeLength(type, byteZero);
-//    }
-
-//    /**
-//     * Returns a copy.
-//     * @return
-//     */
     public byte[] getRLPData() {
         return rlpData;
-//        return rlpData != null ? rlpData.clone() : null;
-    }
-
-    @Override
-    public String toString() {
-        return TestUtils.toChars(getData());
-    }
-
-    protected void recursivePrint(StringBuilder sb) {
-
-        if (this instanceof NewRLPList) {
-
-            NewRLPList rlpList = (NewRLPList) this;
-            sb.append("[");
-            final int size = rlpList.size();
-            for (int i = 0; i < size; i++) {
-                rlpList.get(i).recursivePrint(sb);
-            }
-            if (size > 0 && sb.charAt(sb.length() - 1) == '|') {
-                sb.replace(sb.length() - 1, sb.length(), "");
-            }
-            sb.append("]");
-        } else {
-            sb.append(toString()).append("|");
-        }
     }
 
     public int getRLPIndex() {
@@ -111,10 +68,6 @@ public abstract class NewRLPElement {
         }
         return Arrays.copyOfRange(rlpData, (int) idx, (int) (idx + len));
     }
-
-//    public InputStream getStream() {
-//        return rlpStream;
-//    }
 
 //    private static Metadata decodeMetadata(InputStream rlpStream) throws IOException {
 //        byte[] firstNine = new byte[9];
@@ -217,6 +170,25 @@ public abstract class NewRLPElement {
         return new NewRLPItem(rlpData, 0, type);
     }
 
+    protected void recursivePrint(StringBuilder sb) {
+
+        if (this instanceof NewRLPList) {
+
+            NewRLPList rlpList = (NewRLPList) this;
+            sb.append("[");
+            final int size = rlpList.size();
+            for (int i = 0; i < size; i++) {
+                rlpList.get(i).recursivePrint(sb);
+            }
+            if (size > 0 && sb.charAt(sb.length() - 1) == '|') {
+                sb.replace(sb.length() - 1, sb.length(), "");
+            }
+            sb.append("]");
+        } else {
+            sb.append(toString()).append("|");
+        }
+    }
+
     @Override
     public boolean equals(Object obj) {
 
@@ -234,8 +206,6 @@ public abstract class NewRLPElement {
         }
 
         return true;
-
-//        return Arrays.equals(other.getRLPData(), getRLPData());
     }
 
     /**
@@ -254,16 +224,17 @@ public abstract class NewRLPElement {
     }
 
     private static final class Metadata {
-//        private final long rlpIndex;
-//        private final ElementType type;
         private final int dataIndex;
         private final int dataLength;
 
         private Metadata(int dataIndex, int dataLength) {
-//            this.rlpIndex = rlpIndex;
-//            this.type = type;
             this.dataIndex = dataIndex;
             this.dataLength = dataLength;
         }
+    }
+
+    @Override
+    public String toString() {
+        return TestUtils.toChars(getData()); // TODO decouple from TestUtils
     }
 }
