@@ -1,13 +1,20 @@
 package org.ethereum.util;
 
+import java.util.Arrays;
+import java.util.Queue;
+
 /**
  * Created by Evo on 1/19/2017.
  */
 public class NewRLPItem extends NewRLPElement {
 
-//    NewRLPItem(byte single) {
-//        super(ElementType.SINGLE_BYTE, new byte[] { single }, 0);
-//    }
+    NewRLPItem(byte[] rlpData) {
+        super(rlpData);
+    }
+
+    NewRLPItem(byte[] rlpData, int rlpIndex) {
+        super(rlpData, rlpIndex);
+    }
 
     NewRLPItem(byte[] rlpData, int rlpIndex, ElementType type) {
         super(rlpData, rlpIndex, type);

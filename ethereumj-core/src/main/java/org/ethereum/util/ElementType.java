@@ -53,5 +53,4 @@ public enum ElementType {
 
         System.out.println(sb.toString());
     }
-
 }
