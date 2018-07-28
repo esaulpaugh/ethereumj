@@ -30,6 +30,11 @@ public class NewRLPList extends NewRLPElement implements List<NewRLPElement>, Bu
         };
     }
 
+    /**
+     * For decoding?
+     *
+     * @return
+     */
     @Override
     public NewRLPList build() {
 

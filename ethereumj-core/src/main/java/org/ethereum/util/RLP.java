@@ -59,7 +59,8 @@ import static org.spongycastle.util.BigIntegers.asUnsignedByteArray;
  * @author Roman Mandeleil
  * @since 01.04.2014
  */
-public class RLP {
+public class
+RLP {
 
     private static final Logger logger = LoggerFactory.getLogger("rlp");
 

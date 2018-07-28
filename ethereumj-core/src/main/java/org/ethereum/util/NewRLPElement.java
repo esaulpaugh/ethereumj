@@ -11,6 +11,8 @@ import java.util.Arrays;
  */
 public abstract class NewRLPElement {
 
+    public static final byte[] EMPTY_BYTE_ARRAY = new byte[0];
+
     private static final int LONG_DATA_THRESHOLD = 56;
 
     protected final byte[] rlpData;
@@ -138,72 +140,108 @@ public abstract class NewRLPElement {
         return encodeItem(string.getBytes(charset));
     }
 
+//    public static NewRLPItem encodeItem(byte[] data) {
+//        return (NewRLPItem) _encode(false, data);
+//
+////        final ElementType type;
+////        if(data.length > 55) {
+////            type = ElementType.ITEM_LONG;
+////            byte[] lengthBytes = ByteUtil.intToBytesNoLeadZeroes(data.length);
+////
+////            byte[] rlpData = new byte[1 + lengthBytes.length + data.length];
+////            rlpData[0] = (byte) (type.getOffset() + lengthBytes.length);
+////            System.arraycopy(lengthBytes, 0, rlpData, 1, lengthBytes.length);
+////            System.arraycopy(data, 0, rlpData, 1 + lengthBytes.length, data.length);
+////
+////            return new NewRLPItem(rlpData, 0, type);
+////        }
+////
+////        type = ElementType.ITEM_SHORT;
+////
+////        byte[] rlpData = new byte[1 + data.length];
+////        rlpData[0] = (byte) (type.getOffset() + data.length);
+////        System.arraycopy(data, 0, rlpData, 1, data.length);
+////
+////        return new NewRLPItem(rlpData, 0, type);
+//    }
+
     public static NewRLPItem encodeItem(byte[] data) {
-        return (NewRLPItem) _encode(false, data);
-
-//        final ElementType type;
-//        if(data.length > 55) {
-//            type = ElementType.ITEM_LONG;
-//            byte[] lengthBytes = ByteUtil.intToBytesNoLeadZeroes(data.length);
-//
-//            byte[] rlpData = new byte[1 + lengthBytes.length + data.length];
-//            rlpData[0] = (byte) (type.getOffset() + lengthBytes.length);
-//            System.arraycopy(lengthBytes, 0, rlpData, 1, lengthBytes.length);
-//            System.arraycopy(data, 0, rlpData, 1 + lengthBytes.length, data.length);
-//
-//            return new NewRLPItem(rlpData, 0, type);
-//        }
-//
-//        type = ElementType.ITEM_SHORT;
-//
-//        byte[] rlpData = new byte[1 + data.length];
-//        rlpData[0] = (byte) (type.getOffset() + data.length);
-//        System.arraycopy(data, 0, rlpData, 1, data.length);
-//
-//        return new NewRLPItem(rlpData, 0, type);
-    }
-
-    public static NewRLPElement encodeList(byte[]... arrays) {
-        return _encode(true, arrays);
-    }
-
-    // TODO test size one array encoded as single item and as short list
-    private static NewRLPElement _encode(boolean list, byte[]... arrays) {
 
         ElementType type;
         byte[] rlpData;
-        if (arrays == null) {
-            type = list ? ElementType.LIST_SHORT : ElementType.ITEM_SHORT;
+
+        int dataLen = data.length;
+
+        if (dataLen < LONG_DATA_THRESHOLD) {
+            if (dataLen == 1) {
+                byte single = data[0];
+
+                if ((single & 0xFF) < 0x80) {
+                    // single == 0 ? (byte) ElementType.ITEM_SHORT.getOffset() :
+                    // NOTE: there are two ways zero can be encoded - 0x00 and OFFSET_SHORT_ITEM
+                    return new NewRLPItem(new byte[] { single }, 0);
+                }
+            }
+
+            type = ElementType.ITEM_SHORT;
+
+            rlpData = new byte[1 + dataLen];
+            rlpData[0] = (byte) (type.getOffset() + dataLen);
+            System.arraycopy(data, 0, rlpData, 1, dataLen);
+
+        } else {
+
+            type = ElementType.ITEM_LONG;
+
+//                final int lengthLen = ByteUtil.byteLengthNoLeadZeroes(dataLen);
+
+//                final byte[] lengthBytes = ByteUtil.intsToBytes()
+
+//            byte[] lengthBytes = ByteUtil.intToBytesNoLeadZeroes(dataLen);
+//            final int lengthLen = lengthBytes.length;
+
+            final byte[] dataLenBytes = lengthToBytes(dataLen);
+            final int numLengthBytes = dataLenBytes.length;
+
+            rlpData = new byte[1 + numLengthBytes + dataLen];
+            rlpData[0] = (byte) (type.getOffset() + numLengthBytes);
+            System.arraycopy(dataLenBytes, 0, rlpData, 1, numLengthBytes);
+            System.arraycopy(data, 0, rlpData, 1 + numLengthBytes, dataLen);
+
+//            System.arraycopy(lengthBytes, 0, rlpData, 1, lengthLen);
+//                ByteUtil.insertInt(rlpData, dataLen, lengthLen);
+//                System.arraycopy(data, 0, rlpData, 1 + lengthLen, dataLen);
+        }
+
+        return new NewRLPItem(rlpData, 0);
+    }
+
+    // TODO test size one array encoded as single item and as short list
+
+    /**
+     *
+     * @param elements pre-encoded top-level elements of the list
+     * @return
+     */
+    public static NewRLPElement encodeList(NewRLPElement... elements) {
+
+        ElementType type;
+        byte[] rlpData;
+        if (elements == null) {
+            type = ElementType.LIST_SHORT;
             rlpData = new byte[] { (byte) type.getOffset() };
         } else {
 
             int dataLen = 0;
-            for (byte[] arr : arrays) {
-                dataLen += arr.length;
+            for (NewRLPElement element : elements) {
+                dataLen += element.rlpData.length;
             }
 
             int destPos;
 
             if (dataLen < LONG_DATA_THRESHOLD) {
-                if(dataLen == 1 && !list) {
-                    byte single = 0;
-                    for (byte[] arr : arrays) {
-                        if(arr.length > 0) {
-                            single = arr[0];
-                            break;
-                        }
-                    }
 
-                    if((single & 0xFF) < 0x80) {
-                        // single == 0 ? (byte) ElementType.ITEM_SHORT.getOffset() :
-                        // NOTE: there are two ways zero can be encoded - 0x00 and OFFSET_SHORT_ITEM
-                        return new NewRLPItem(new byte[] { single }, 0);
-                    }
-                }
-
-                type = list
-                        ? ElementType.LIST_SHORT
-                        : ElementType.ITEM_SHORT;
+                type = ElementType.LIST_SHORT;
 
                 rlpData = new byte[1 + dataLen];
                 rlpData[0] = (byte) (type.getOffset() + dataLen);
@@ -212,34 +250,72 @@ public abstract class NewRLPElement {
 //                System.arraycopy(data, 0, rlpData, 1, dataLen);
             } else {
 
-                type = list
-                        ? ElementType.LIST_LONG
-                        : ElementType.ITEM_LONG;
+                type = ElementType.LIST_LONG;
 
-                final int lengthLen = ByteUtil.byteLengthNoLeadZeroes(dataLen);
+//                final int lengthLen = ByteUtil.byteLengthNoLeadZeroes(dataLen);
+
+//                final byte[] lengthBytes = ByteUtil.intsToBytes()
 
 //            byte[] lengthBytes = ByteUtil.intToBytesNoLeadZeroes(dataLen);
 //            final int lengthLen = lengthBytes.length;
 
-                rlpData = new byte[1 + lengthLen + dataLen];
-                rlpData[0] = (byte) (type.getOffset() + lengthLen);
-//            System.arraycopy(lengthBytes, 0, rlpData, 1, lengthLen);
-                ByteUtil.insertInt(rlpData, dataLen, lengthLen);
+                final byte[] dataLenBytes = lengthToBytes(dataLen);
+                final int numLengthBytes = dataLenBytes.length;
 
-                destPos = 1 + lengthLen;
+                rlpData = new byte[1 + numLengthBytes + dataLen];
+                rlpData[0] = (byte) (type.getOffset() + numLengthBytes);
+                System.arraycopy(dataLenBytes, 0, rlpData, 1, numLengthBytes);
+
+
+//            System.arraycopy(lengthBytes, 0, rlpData, 1, lengthLen);
+//                ByteUtil.insertInt(rlpData, dataLen, lengthLen);
+
+                destPos = 1 + numLengthBytes;
 
 //                System.arraycopy(data, 0, rlpData, 1 + lengthLen, dataLen);
             }
 
-            for (final byte[] element : arrays) {
-                System.arraycopy(element, 0, rlpData, destPos, element.length);
-                destPos += element.length;
+            for (final NewRLPElement element : elements) {
+                System.arraycopy(element.rlpData, 0, rlpData, destPos, element.rlpData.length);
+                destPos += element.rlpData.length;
             }
         }
 
-        return list
-                ? new NewRLPList(rlpData, 0)
-                : new NewRLPItem(rlpData, 0);
+        return new NewRLPList(rlpData, 0);
+    }
+
+    private static byte[] lengthToBytes(int length) {
+
+        if (length == 0) {
+            return EMPTY_BYTE_ARRAY;
+        }
+
+        byte a = 0, b = 0, c = 0, d;
+
+        int n = 1;
+        d = (byte) (length & 0xFF);
+        length = length >>> Byte.SIZE;
+        if(length != 0) {
+            n = 2;
+            c = (byte) (length & 0xFF);
+            length = length >>> Byte.SIZE;
+            if(length != 0) {
+                n = 3;
+                b = (byte) (length & 0xFF);
+                length = length >>> Byte.SIZE;
+                if(length != 0) {
+                    n = 4;
+                    a = (byte) (length & 0xFF);
+                }
+            }
+        }
+
+        switch (n) {
+        case 1: return new byte[] { d };
+        case 2: return new byte[] { c, d };
+        case 3: return new byte[] { b, c, d };
+        default: return new byte[] { a, b, c, d };
+        }
     }
 
     protected void recursivePrint(StringBuilder sb) {
@@ -264,11 +340,11 @@ public abstract class NewRLPElement {
     @Override
     public boolean equals(Object obj) {
 
-        if(!(obj instanceof NewRLPItem)) {
+        if(!(obj instanceof NewRLPElement)) {
             return false;
         }
 
-        NewRLPItem other = (NewRLPItem) obj;
+        NewRLPElement other = (NewRLPElement) obj;
 
         final int end = rlpIndex + getRlpLength();
         for (int i = rlpIndex, _i = other.rlpIndex; i < end; i++, _i++) {
