@@ -40,8 +40,8 @@ public class NewRLPList extends NewRLPElement implements List<NewRLPElement>, Bu
 
         final byte[] rlpData = getRLPData();
 
-        int pos = (int) getDataIndex();
-        final int end = pos + (int) getDataLength();
+        int pos = getDataIndex();
+        final int end = pos + getDataLength();
 
         while (pos < end) {
             NewRLPElement newElement;

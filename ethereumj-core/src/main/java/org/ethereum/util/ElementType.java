@@ -11,17 +11,17 @@ public enum ElementType {
     LIST_SHORT(0xc0, true), // 0xc0 + 55 = 0xf7
     LIST_LONG(0xf7, false);
 
-    private final int offset;
+    public final byte offset;
     private final boolean isShort;
 
     ElementType(int offset, boolean isShort) {
-        this.offset = offset;
+        this.offset = (byte) offset;
         this.isShort = isShort;
     }
 
-    public int getOffset() {
-        return offset;
-    }
+//    public int getOffset() {
+//        return offset;
+//    }
 
     public boolean isShort() {
         return isShort;

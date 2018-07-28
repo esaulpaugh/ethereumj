@@ -5,6 +5,8 @@ package org.ethereum.util;
  */
 public class NewRLPItem extends NewRLPElement {
 
+    static final NewRLPElement EMPTY_ITEM = new NewRLPItem(new byte[] { 0 }, 0);
+
     NewRLPItem(byte[] rlpData) {
         super(rlpData);
     }
