@@ -33,35 +33,41 @@ public class TestHax2 {
 
         byte[] theirs, mine;
 
+        System.out.println(Arrays.toString(NewRLP.encodeByte((byte) 0x00)));
+        System.out.println(Arrays.toString(NewRLP.encodeShort((short) 0x0000).rlpData));
+        System.out.println(Arrays.toString(NewRLP.encodeInt(0x00).rlpData));
+//        System.out.println(Arrays.toString(NewRLP.encodeLong(0x00).rlpData)); // TODO
+
+
         theirs = RLP.encodeByte((byte) 'z');
-        mine = NewRLPElement.encodeItem("z", UTF_8).getRLPData();
+        mine = NewRLP.encodeItem("z", UTF_8).getRLPData();
         test(theirs, mine);
 
         theirs = RLP.encodeString("pam");
-        mine = NewRLPElement.encodeItem("pam", UTF_8).getRLPData();
+        mine = NewRLP.encodeItem("pam", UTF_8).getRLPData();
         test(theirs, mine);
 
         theirs = RLP.encodeString(longString);
-        mine = NewRLPElement.encodeItem(longString, UTF_8).getRLPData();
+        mine = NewRLP.encodeItem(longString, UTF_8).getRLPData();
         test(theirs, mine);
 
-        theirs = RLP.encodeList(NewRLPElement.encodeItem("long", UTF_8).rlpData, NewRLPElement.encodeItem("walk", UTF_8).rlpData);
-        mine = NewRLPElement.encodeList(NewRLPElement.encodeItem("long", UTF_8), NewRLPElement.encodeItem("walk", UTF_8)).rlpData;
+        theirs = RLP.encodeList(NewRLP.encodeItem("long", UTF_8).rlpData, NewRLP.encodeItem("walk", UTF_8).rlpData);
+        mine = NewRLP.encodeList(NewRLP.encodeItem("long", UTF_8), NewRLP.encodeItem("walk", UTF_8)).rlpData;
         test(theirs, mine);
 
         theirs = RLP.encodeList(
                 RLP.encodeString("cat"), RLP.encodeString("dog"),
-                NewRLPElement.encodeList(NewRLPElement.encodeItem("cat", UTF_8), NewRLPElement.encodeItem("dog", UTF_8)).rlpData
+                NewRLP.encodeList(NewRLP.encodeItem("cat", UTF_8), NewRLP.encodeItem("dog", UTF_8)).rlpData
         );
-        mine = NewRLPElement.encodeList(
-                NewRLPElement.encodeItem("cat", UTF_8), NewRLPElement.encodeItem("dog", UTF_8),
-                NewRLPElement.encodeList(NewRLPElement.encodeItem("cat", UTF_8), NewRLPElement.encodeItem("dog", UTF_8))
+        mine = NewRLP.encodeList(
+                NewRLP.encodeItem("cat", UTF_8), NewRLP.encodeItem("dog", UTF_8),
+                NewRLP.encodeList(NewRLP.encodeItem("cat", UTF_8), NewRLP.encodeItem("dog", UTF_8))
         ).rlpData;
         test(theirs, mine);
 
         NewRLPElement[] elements = new NewRLPElement[longString.length() - 2];
         for(int i = 2, j = 0; i < longString.length(); i++) {
-            elements[j++] = NewRLPElement.encodeItem(new byte[] { (byte) longString.charAt(i) });
+            elements[j++] = NewRLP.encodeItem(new byte[] { (byte) longString.charAt(i) });
         }
         byte[][] datas = new byte[elements.length][];
         for(int i = 0; i < datas.length; i++) {
@@ -69,7 +75,7 @@ public class TestHax2 {
         }
 
         theirs = RLP.encodeList(datas);
-        mine = NewRLPElement.encodeList(
+        mine = NewRLP.encodeList(
                 elements
         ).rlpData;
         test(theirs, mine);

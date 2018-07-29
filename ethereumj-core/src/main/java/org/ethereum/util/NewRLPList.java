@@ -3,11 +3,7 @@ package org.ethereum.util;
 import org.apache.commons.lang3.concurrent.ConcurrentException;
 import org.apache.commons.lang3.concurrent.LazyInitializer;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.ListIterator;
+import java.util.*;
 
 /**
  * Created by Evo on 1/19/2017.
@@ -16,32 +12,44 @@ public class NewRLPList extends NewRLPElement implements List<NewRLPElement>, Bu
 
     private final LazyInitializer<ArrayList<NewRLPElement>> lazyArrayList;
 
-    NewRLPList(byte[] rlpData) {
-        this(rlpData, 0);
+    NewRLPList(byte[] rlpData, int rlpIndex) {
+        this(rlpData, rlpIndex, null);
     }
 
-    NewRLPList(byte[] rlpData, int rlpIndex) {
+    NewRLPList(byte[] rlpData, int rlpIndex, final NewRLPElement[] elements) {
         super(rlpData, rlpIndex);
         this.lazyArrayList = new LazyInitializer<ArrayList<NewRLPElement>>() {
             @Override
-            protected ArrayList<NewRLPElement> initialize() throws ConcurrentException {
-                return new ArrayList<NewRLPElement>();
+            protected ArrayList<NewRLPElement> initialize() {
+                System.out.println("=== initialize() arraylist ===");
+                return elements == null
+                        ? new ArrayList<NewRLPElement>()
+                        : new ArrayList<>(Arrays.asList(elements));
             }
         };
     }
 
+    @Override
+    protected void recursivePrint(StringBuilder sb) {
+        sb.append("[");
+        for(NewRLPElement e : this) {
+            e.recursivePrint(sb);
+        }
+        sb.append("]");
+    }
+
     /**
-     * For decoding?
+     *
      *
      * @return
      */
     @Override
     public NewRLPList build() {
 
-        final byte[] rlpData = getRLPData();
+        Metadata metadata = getMetadata();
 
-        int pos = getDataIndex();
-        final int end = pos + getDataLength();
+        int pos = metadata.dataIndex;
+        final int end = pos + metadata.dataLength;
 
         while (pos < end) {
             NewRLPElement newElement;
@@ -58,7 +66,6 @@ public class NewRLPList extends NewRLPElement implements List<NewRLPElement>, Bu
                 break;
             default:
                 throw new RuntimeException("???");
-
             }
             add(newElement);
             pos += newElement.getRlpLength();
@@ -82,7 +89,7 @@ public class NewRLPList extends NewRLPElement implements List<NewRLPElement>, Bu
         return (NewRLPList) get(index);
     }
 
-    public ArrayList<NewRLPElement> getArrayList() {
+    private ArrayList<NewRLPElement> getArrayList() {
         try {
             return lazyArrayList.get();
         } catch (ConcurrentException e) {
