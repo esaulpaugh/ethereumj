@@ -1,10 +1,10 @@
-package org.ethereum.util;
+package org.ethereum.util.rlp;
 
-import java.util.Arrays;
+import org.ethereum.util.rlp.NewRLP;
 
 public class TestHax4 {
 
-    public static void main(String[] args0) {
+    public static void main(String[] args0) throws Exception {
 
 //        long x = 0, y = 1, z = Integer.MIN_VALUE;
 //
@@ -60,12 +60,21 @@ public class TestHax4 {
         long start, end;
         double elapsed;
 
+        byte[] xx = new byte[30];
         for(long i = Long.MAX_VALUE; i > Long.MAX_VALUE - 1000111000; i--) {
-            byte[] xx = NewRLP.longToBytes(i);
+            int n = NewRLP.putLong(i, xx, 5);
+            long lo = NewRLP.bytesToLong(xx, 5, n);
+            if(i != lo) {
+                throw new Exception("!!");
+            }
         }
         start = System.nanoTime();
         for(long i = Long.MAX_VALUE; i > Long.MAX_VALUE - 1000111000; i--) {
-            byte[] xx = NewRLP.longToBytes(i);
+            int n = NewRLP.putLong(i, xx, 5);
+            long lo = NewRLP.bytesToLong(xx, 5, n);
+            if(i != lo) {
+                throw new Exception("!!");
+            }
         }
         end = System.nanoTime();
 

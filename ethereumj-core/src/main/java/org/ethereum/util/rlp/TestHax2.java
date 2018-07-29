@@ -1,4 +1,12 @@
-package org.ethereum.util;
+package org.ethereum.util.rlp;
+
+import com.sun.org.apache.xerces.internal.impl.dv.util.HexBin;
+import org.ethereum.util.RLP;
+import org.ethereum.util.RLPList;
+import org.ethereum.util.rlp.NewRLP;
+import org.ethereum.util.rlp.NewRLPElement;
+import org.ethereum.util.rlp.NewRLPList;
+import org.ethereum.util.rlp.OORLP;
 
 import java.util.Arrays;
 
@@ -33,52 +41,67 @@ public class TestHax2 {
 
         byte[] theirs, mine;
 
-        System.out.println(Arrays.toString(NewRLP.encodeByte((byte) 0x00)));
-        System.out.println(Arrays.toString(NewRLP.encodeShort((short) 0x0000).rlpData));
-        System.out.println(Arrays.toString(NewRLP.encodeInt(0x00).rlpData));
-//        System.out.println(Arrays.toString(NewRLP.encodeLong(0x00).rlpData)); // TODO
+        byte[] x = new byte[80];
+        int i = 0;
+        i = NewRLP.encodeLong((byte) -0x01, x, i);
+        i = NewRLP.encodeLong((short) -0x0001, x, i);
+        i = NewRLP.encodeLong(-0x0001, x, i);
+        i = NewRLP.encodeLong(-0x01L, x, i);
+        i = NewRLP.encodeString("yipee", UTF_8, x, i);
+        System.out.println(i);
+
+        System.out.println(HexBin.encode(x));
+        System.out.println(HexBin.encode(NewRLP.longToBytes(0)));
 
 
         theirs = RLP.encodeByte((byte) 'z');
-        mine = NewRLP.encodeItem("z", UTF_8).getRLPData();
+        mine = OORLP.encodeItem("z", UTF_8).getEncoding();
         test(theirs, mine);
+        System.out.println(OORLP.decode(mine).toString());
 
         theirs = RLP.encodeString("pam");
-        mine = NewRLP.encodeItem("pam", UTF_8).getRLPData();
+        mine = OORLP.encodeItem("pam", UTF_8).getEncoding();
         test(theirs, mine);
 
         theirs = RLP.encodeString(longString);
-        mine = NewRLP.encodeItem(longString, UTF_8).getRLPData();
+        mine = OORLP.encodeItem(longString, UTF_8).getEncoding();
         test(theirs, mine);
 
-        theirs = RLP.encodeList(NewRLP.encodeItem("long", UTF_8).rlpData, NewRLP.encodeItem("walk", UTF_8).rlpData);
-        mine = NewRLP.encodeList(NewRLP.encodeItem("long", UTF_8), NewRLP.encodeItem("walk", UTF_8)).rlpData;
+        theirs = RLP.encodeList(OORLP.encodeItem("long", UTF_8).buffer, OORLP.encodeItem("walk", UTF_8).buffer);
+        mine = OORLP.encodeList(OORLP.encodeItem("long", UTF_8), OORLP.encodeItem("walk", UTF_8)).buffer;
         test(theirs, mine);
 
         theirs = RLP.encodeList(
                 RLP.encodeString("cat"), RLP.encodeString("dog"),
-                NewRLP.encodeList(NewRLP.encodeItem("cat", UTF_8), NewRLP.encodeItem("dog", UTF_8)).rlpData
+                OORLP.encodeList(OORLP.encodeItem("cat", UTF_8), OORLP.encodeItem("dog", UTF_8)).buffer
         );
-        mine = NewRLP.encodeList(
-                NewRLP.encodeItem("cat", UTF_8), NewRLP.encodeItem("dog", UTF_8),
-                NewRLP.encodeList(NewRLP.encodeItem("cat", UTF_8), NewRLP.encodeItem("dog", UTF_8))
-        ).rlpData;
+        mine = OORLP.encodeList(
+                OORLP.encodeItem("cat", UTF_8), OORLP.encodeItem("dog", UTF_8),
+                OORLP.encodeList(OORLP.encodeItem("cat", UTF_8), OORLP.encodeItem("dog", UTF_8))
+        ).buffer;
         test(theirs, mine);
 
         NewRLPElement[] elements = new NewRLPElement[longString.length() - 2];
-        for(int i = 2, j = 0; i < longString.length(); i++) {
-            elements[j++] = NewRLP.encodeItem(new byte[] { (byte) longString.charAt(i) });
+        for(int j = 2, k = 0; j < longString.length(); j++) {
+            elements[k++] = OORLP.encodeItem(new byte[] { (byte) longString.charAt(j) });
         }
         byte[][] datas = new byte[elements.length][];
-        for(int i = 0; i < datas.length; i++) {
-            datas[i] = elements[i].rlpData;
+        for(int j = 0; j < datas.length; j++) {
+            datas[j] = elements[j].buffer;
         }
 
         theirs = RLP.encodeList(datas);
-        mine = NewRLP.encodeList(
+        mine = OORLP.encodeList(
                 elements
-        ).rlpData;
+        ).buffer;
         test(theirs, mine);
+
+
+//        RLPList li = new RLPList();
+//        li.setRLPData(theirs);
+        RLPList.recursivePrint(RLP.decode2(theirs));
+        System.out.println();
+        System.out.println(new NewRLPList(mine, 0, null).build().toString());
     }
 
 }

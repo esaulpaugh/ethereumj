@@ -1,9 +1,11 @@
-package org.ethereum.util;
+package org.ethereum.util.rlp;
 
 import com.sun.org.apache.xerces.internal.impl.dv.util.HexBin;
+import org.ethereum.util.RLP;
+import org.ethereum.util.RLPList;
+import org.ethereum.util.TestUtils;
 
 import java.math.BigInteger;
-import java.nio.charset.Charset;
 import java.util.Arrays;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -14,7 +16,6 @@ import static org.spongycastle.util.BigIntegers.asUnsignedByteArray;
  */
 public class TestHax {
 
-    // TODO **********TEST***********
     private static final byte[] zeroA = new byte[] {0x00};
     private static final byte[] zeroB = new byte[] {(byte) 0x80};
     private static final byte[] empty = new byte[] {  };
@@ -68,13 +69,13 @@ public class TestHax {
 //        printRLPCustom(NewRLPElement.decode(shortList1));
 //        printRLPCustom(NewRLPElement.decode(longList__));
 
-        byte[] _a = NewRLP.encodeItem(zeroA).rlpData;
-        byte[] _b = NewRLP.encodeList(NewRLP.encodeItem(zeroA)).rlpData;
+        byte[] _a = OORLP.encodeItem(zeroA).buffer;
+        byte[] _b = OORLP.encodeList(OORLP.encodeItem(zeroA)).buffer;
         byte[] _c = new byte[] { (byte) 0xc1, 0x00 };
 
-        a = NewRLP.decode(_a);
-        b = NewRLP.decode(_b);
-        c = NewRLP.decode(_c);
+        a = OORLP.decode(_a);
+        b = OORLP.decode(_b);
+        c = OORLP.decode(_c);
 
 //        a = NewRLPElement.encodeItem(empty);
 //        b = NewRLPElement.decode(zeroB);
@@ -94,12 +95,12 @@ public class TestHax {
 //        b = NewRLPElement.encodeItem("wew", UTF_8);
 //        b = NewRLPElement.encodeItem("Lorem ipsum dolor sit amet, consectetur adipisicing elit", UTF_8);
 //        b = NewRLPElement.encodeList(NewRLPElement.encodeItem("long", UTF_8), NewRLPElement.encodeItem("walk", UTF_8));
-        b = NewRLP.encodeList(
-                NewRLP.encodeItem("cat", UTF_8), NewRLP.encodeItem("dog", UTF_8),
-                NewRLP.encodeList(
-                        NewRLP.encodeItem("cat", UTF_8),
-                        NewRLP.encodeItem("dog", UTF_8),
-                        NewRLP.encodeList(NewRLP.encodeItem(new byte[] { (byte) 'p'}), NewRLP.encodeItem("owl", UTF_8), NewRLP.encodeItem("zebra", UTF_8))
+        b = OORLP.encodeList(
+                OORLP.encodeItem("cat", UTF_8), OORLP.encodeItem("dog", UTF_8),
+                OORLP.encodeList(
+                        OORLP.encodeItem("cat", UTF_8),
+                        OORLP.encodeItem("dog", UTF_8),
+                        OORLP.encodeList(OORLP.encodeItem(new byte[] { (byte) 'p'}), OORLP.encodeItem("owl", UTF_8), OORLP.encodeItem("zebra", UTF_8))
                 )
         );
 
@@ -111,7 +112,7 @@ public class TestHax {
 //                elements
 //        );
 
-        NewRLPElement e = NewRLP.decode(b.rlpData, 0);
+        NewRLPElement e = OORLP.decode(b.buffer, 0);
 
 //        StringBuilder sb0 = new StringBuilder();
 //        e.recursivePrint(sb0);
@@ -121,12 +122,12 @@ public class TestHax {
 //        b.recursivePrint(sb1);
         System.out.println(b.toString());
 
-        byte[] iii = b.rlpData;
-        NewRLPElement decoded = NewRLP.decode(iii);
+        byte[] iii = b.buffer;
+        NewRLPElement decoded = OORLP.decode(iii);
 
         System.out.println(decoded.equals(b));
 
-        RLPList list = RLP.decode2(b.rlpData);
+        RLPList list = RLP.decode2(b.buffer);
         RLPList.recursivePrint(list);
 
 //        printRLPCustom(a);
@@ -177,11 +178,11 @@ public class TestHax {
 
     private static final void printRLPCustom(NewRLPElement element) {
         switch (element.getType()) {
-        case SINGLE_BYTE: System.out.println((char) element.rlpData[0]); break;
-        case ITEM_SHORT: System.out.println(HexBin.encode(new byte[] { element.rlpData[0] }) + ", . . . "); break;
-        case ITEM_LONG: System.out.println(HexBin.encode(new byte[] { element.rlpData[0], element.rlpData[1], element.rlpData[2] }) + " . . ."); break;
-        case LIST_SHORT: System.out.println(HexBin.encode(element.rlpData)); break;
-        case LIST_LONG: System.out.println(HexBin.encode(new byte[] { element.rlpData[0], element.rlpData[1] }) + new String(Arrays.copyOfRange(element.rlpData, 2, element.rlpData.length), UTF_8)); break;
+        case SINGLE_BYTE: System.out.println((char) element.buffer[0]); break;
+        case ITEM_SHORT: System.out.println(HexBin.encode(new byte[] { element.buffer[0] }) + ", . . . "); break;
+        case ITEM_LONG: System.out.println(HexBin.encode(new byte[] { element.buffer[0], element.buffer[1], element.buffer[2] }) + " . . ."); break;
+        case LIST_SHORT: System.out.println(HexBin.encode(element.buffer)); break;
+        case LIST_LONG: System.out.println(HexBin.encode(new byte[] { element.buffer[0], element.buffer[1] }) + new String(Arrays.copyOfRange(element.buffer, 2, element.buffer.length), UTF_8)); break;
         }
     }
 
