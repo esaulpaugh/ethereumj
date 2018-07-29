@@ -2,15 +2,18 @@ package org.ethereum.util;
 
 import java.math.BigInteger;
 import java.nio.charset.Charset;
+import java.util.Arrays;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.ethereum.util.ElementType.ITEM_SHORT;
+import static org.ethereum.util.NewRLPItem.EMPTY_ITEM;
 import static org.spongycastle.util.BigIntegers.asUnsignedByteArray;
 
 public class NewRLP {
 
 //    private static final Logger logger = LoggerFactory.getLogger("rlp");
 
+    private static final int LONG_DATA_THRESHOLD = 56;
 
     /**
      * Allow for content up to size of 2^64 bytes *
@@ -123,20 +126,45 @@ public class NewRLP {
         }
     }
 
+    public static long bytesToLong(byte[] data) {
+
+//        if(data.length == 0) {
+//            return 0;
+//        }
+
+//        byte length = (byte) (data[index] - ITEM_SHORT.offset);
+
+        int index = 0;
+
+        long val = 0;
+        int i = index;
+        switch (data.length) {
+        case 8: val |= (data[i++] & 0xFFL) << (Byte.SIZE * 7);
+        case 7: val |= (data[i++] & 0xFFL) << (Byte.SIZE * 6);
+        case 6: val |= (data[i++] & 0xFFL) << (Byte.SIZE * 5);
+        case 5: val |= (data[i++] & 0xFFL) << (Byte.SIZE * 4);
+        case 4: val |= (data[i++] & 0xFFL) << (Byte.SIZE * 3);
+        case 3: val |= (data[i++] & 0xFFL) << (Byte.SIZE * 2);
+        case 2: val |= (data[i++] & 0xFFL) << Byte.SIZE;
+        case 1: val |= data[i] & 0xFFL;
+        default: return val;
+        }
+    }
+
     private static String decodeStringItem(byte[] data) {
-        return new String(NewRLPElement.decode(data, 0).rlpData, UTF_8);
+        return new String(decode(data, 0).rlpData, UTF_8);
     }
 
     private static String decodeStringItem(byte[] data, int index, Charset charset) {
-        return new String(NewRLPElement.decode(data, index).rlpData, charset);
+        return new String(decode(data, index).rlpData, charset);
     }
 
     public static BigInteger decodeBigInteger(byte[] data, int index) {
-        return new BigInteger(1, NewRLPElement.decode(data, index).getData());
+        return new BigInteger(1, NewRLP.decode(data, index).getData());
     }
 
     public static int getFirstListElement(byte[] payload, int pos) {
-        return NewRLPElement.decode(payload, pos).getDataIndex();
+        return NewRLP.decode(payload, pos).getDataIndex();
     }
 
     public static int nextElementIndex(NewRLPElement e) {
@@ -218,7 +246,7 @@ public class NewRLP {
     }
 
     public static NewRLPItem encodeInt(int singleInt) {
-        return NewRLPElement.encodeItem(intToBytes(singleInt));
+        return encodeItem(intToBytes(singleInt));
     }
     public static final byte[] EMPTY_BYTE_ARRAY = new byte[0];
     public static byte[] intToBytes(int val) {
@@ -255,18 +283,251 @@ public class NewRLP {
         }
     }
 
+    static final byte[] x = new byte[Long.BYTES];
+    public static byte[] longToBytes3(long v) {
 
+        x[0] = (byte)(v >>> 56);
+        x[1] = (byte)(v >>> 48);
+        x[2] = (byte)(v >>> 40);
+        x[3] = (byte)(v >>> 32);
+        x[4] = (byte)(v >>> 24);
+        x[5] = (byte)(v >>> 16);
+        x[6] = (byte)(v >>>  8);
+        x[7] = (byte) v;
 
+        int i = 0;
+        while(i < Long.BYTES && x[i] == 0) {
+            i++;
+        }
 
+        return Arrays.copyOfRange(x, i, Long.BYTES);
+    }
+
+    public static byte[] longToBytes2(long val) {
+
+        if(val == 0) {
+            return EMPTY_BYTE_ARRAY;
+        }
+
+        byte[] temp = new byte[Long.BYTES];
+
+        int n = 8;
+        while(val != 0) {
+            temp[--n] = (byte) (val & 0xFF);
+            val = val >>> Byte.SIZE;
+        }
+        byte[] bytes = new byte[Long.BYTES - n];
+        System.arraycopy(temp, n, bytes, 0, bytes.length);
+
+        return bytes;
+    }
+
+    public static byte[] longToBytes(long val) {
+
+        if(val == 0) {
+            return EMPTY_BYTE_ARRAY;
+        }
+
+        byte a = 0, b = 0, c = 0, d = 0, e = 0, f = 0, g = 0, h;
+
+        int n = 1;
+        h = (byte) (val & 0xFF);
+        val = val >>> Byte.SIZE;
+        if(val != 0) {
+            n = 2;
+            g = (byte) (val & 0xFF);
+            val = val >>> Byte.SIZE;
+            if(val != 0) {
+                n = 3;
+                f = (byte) (val & 0xFF);
+                val = val >>> Byte.SIZE;
+                if(val != 0) {
+                    n = 4;
+                    e = (byte) (val & 0xFF);
+                    val = val >>> Byte.SIZE;
+                    if(val != 0) {
+                        n = 5;
+                        d = (byte) (val & 0xFF);
+                        val = val >>> Byte.SIZE;
+                        if(val != 0) {
+                            n = 6;
+                            c = (byte) (val & 0xFF);
+                            val = val >>> Byte.SIZE;
+                            if(val != 0) {
+                                n = 7;
+                                b = (byte) (val & 0xFF);
+                                val = val >>> Byte.SIZE;
+                                if(val != 0) {
+                                    n = 8;
+                                    a = (byte) (val & 0xFF);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        switch (n) {
+        case 1: return new byte[] { h };
+        case 2: return new byte[] { g, h };
+        case 3: return new byte[] { f, g, h };
+        case 4: return new byte[] { e, f, g, h };
+        case 5: return new byte[] { d, e, f, g, h };
+        case 6: return new byte[] { c, d, e, f, g, h };
+        case 7: return new byte[] { b, c, d, e, f, g, h };
+        default: return new byte[]{ a, b, c, d, e, f, g, h};
+        }
+    }
 
     public static NewRLPItem encodeString(String srcString) {
-        return NewRLPElement.encodeItem(srcString.getBytes());
+        return encodeItem(srcString.getBytes());
     }
 
     public static NewRLPItem encodeBigInteger(BigInteger srcBigInteger) {
         if (srcBigInteger.equals(BigInteger.ZERO))
-            return NewRLPElement.encodeItem(new byte[] { 0 });
+            return encodeItem(new byte[] { 0 });
         else
-            return NewRLPElement.encodeItem(asUnsignedByteArray(srcBigInteger));
+            return encodeItem(asUnsignedByteArray(srcBigInteger));
+    }
+
+    // ====================================
+
+    public static NewRLPElement decode(byte[] rlpData) {
+        return decode(rlpData, 0);
+    }
+
+    public static NewRLPItem decodeItem(byte[] rlpData) {
+        return (NewRLPItem) decode(rlpData, 0);
+    }
+
+    public static NewRLPItem decodeItem(byte[] rlpData, int rlpIndex) {
+        return (NewRLPItem) decode(rlpData, rlpIndex);
+    }
+
+    public static NewRLPList decodeList(byte[] rlpData) {
+        return (NewRLPList) decode(rlpData, 0);
+    }
+
+    public static NewRLPList decodeList(byte[] rlpData, int rlpIndex) {
+        return (NewRLPList) decode(rlpData, rlpIndex);
+    }
+
+    public static NewRLPElement decode(byte[] rlpData, int rlpIndex) {
+
+        if(rlpData == null) {
+            return null;
+        }
+
+        if(rlpData.length == 0) {
+            return EMPTY_ITEM;
+        }
+
+        ElementType type = ElementType.type(rlpData[rlpIndex]);
+        switch (type) {
+        case SINGLE_BYTE:
+        case ITEM_SHORT:
+        case ITEM_LONG:
+            return new NewRLPItem(rlpData, rlpIndex);
+        case LIST_SHORT:
+        case LIST_LONG:
+            return new NewRLPList(rlpData, rlpIndex, null).build();
+        default:
+            throw new RuntimeException("???");
+        }
+    }
+
+    public static NewRLPItem encodeItem(String string, Charset charset) {
+        return encodeItem(string.getBytes(charset));
+    }
+
+    public static NewRLPItem encodeItem(byte[] data) {
+
+        ElementType type;
+        byte[] rlpData;
+
+        int dataLen = data.length;
+
+        if (dataLen < LONG_DATA_THRESHOLD) {
+            if (dataLen == 1) {
+                byte single = data[0];
+
+                if ((single & 0xFF) < 0x80) {
+                    // single == 0 ? (byte) ElementType.ITEM_SHORT.getOffset() :
+                    // NOTE: there are two ways zero can be encoded - 0x00 and OFFSET_SHORT_ITEM
+                    return new NewRLPItem(new byte[] { single }, 0);
+                }
+            }
+
+            type = ElementType.ITEM_SHORT;
+
+            rlpData = new byte[1 + dataLen];
+            rlpData[0] = (byte) (type.offset + dataLen);
+            System.arraycopy(data, 0, rlpData, 1, dataLen);
+        } else {
+
+            type = ElementType.ITEM_LONG;
+
+            final byte[] dataLenBytes = NewRLP.intToBytes(dataLen);
+            final int numLengthBytes = dataLenBytes.length;
+
+            rlpData = new byte[1 + numLengthBytes + dataLen];
+            rlpData[0] = (byte) (type.offset + numLengthBytes);
+            System.arraycopy(dataLenBytes, 0, rlpData, 1, numLengthBytes);
+            System.arraycopy(data, 0, rlpData, 1 + numLengthBytes, dataLen);
+        }
+
+        return new NewRLPItem(rlpData, 0);
+    }
+
+    /**
+     *
+     * @param elements pre-encoded top-level elements of the list
+     * @return
+     */
+    public static NewRLPElement encodeList(NewRLPElement... elements) {
+
+        ElementType type;
+        byte[] rlpData;
+        if (elements == null) {
+            type = ElementType.LIST_SHORT;
+            rlpData = new byte[] { type.offset };
+        } else {
+
+            int dataLen = 0;
+            for (NewRLPElement element : elements) {
+                dataLen += element.rlpData.length;
+            }
+
+            int destPos;
+
+            if (dataLen < LONG_DATA_THRESHOLD) {
+
+                type = ElementType.LIST_SHORT;
+
+                rlpData = new byte[1 + dataLen];
+                rlpData[0] = (byte) (type.offset + dataLen);
+                destPos = 1;
+            } else {
+
+                type = ElementType.LIST_LONG;
+
+                final byte[] dataLenBytes = NewRLP.intToBytes(dataLen);
+                final int numLengthBytes = dataLenBytes.length;
+
+                rlpData = new byte[1 + numLengthBytes + dataLen];
+                rlpData[0] = (byte) (type.offset + numLengthBytes);
+                System.arraycopy(dataLenBytes, 0, rlpData, 1, numLengthBytes);
+
+                destPos = 1 + numLengthBytes;
+            }
+
+            for (final NewRLPElement element : elements) {
+                System.arraycopy(element.rlpData, 0, rlpData, destPos, element.rlpData.length);
+                destPos += element.rlpData.length;
+            }
+        }
+
+        return new NewRLPList(rlpData, 0, elements);
     }
 }

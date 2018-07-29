@@ -52,29 +52,29 @@ public class TestHax {
                 longList__
         };
 
-        for (byte[] a : arrays) {
-            NewRLPElement e = NewRLPElement.decode(a);
-            System.out.println(e.toString());
-        }
+//        for (byte[] a : arrays) {
+//            NewRLPElement e = NewRLPElement.decode(a);
+//            System.out.println(e.toString());
+//        }
 
         NewRLPElement a, b, c;
-        printRLPCustom(NewRLPElement.decode(zeroA));
-        printRLPCustom(NewRLPElement.decode(zeroB));
-        printRLPCustom(NewRLPElement.decode(empty));
-        printRLPCustom(NewRLPElement.decode(singleByte));
-        printRLPCustom(NewRLPElement.decode(shortString));
-        printRLPCustom(NewRLPElement.decode(longString));
-        printRLPCustom(NewRLPElement.decode(shortList0));
-        printRLPCustom(NewRLPElement.decode(shortList1));
-        printRLPCustom(NewRLPElement.decode(longList__));
+//        printRLPCustom(NewRLPElement.decode(zeroA));
+//        printRLPCustom(NewRLPElement.decode(zeroB));
+//        printRLPCustom(NewRLPElement.decode(empty));
+//        printRLPCustom(NewRLPElement.decode(singleByte));
+//        printRLPCustom(NewRLPElement.decode(shortString));
+//        printRLPCustom(NewRLPElement.decode(longString));
+//        printRLPCustom(NewRLPElement.decode(shortList0));
+//        printRLPCustom(NewRLPElement.decode(shortList1));
+//        printRLPCustom(NewRLPElement.decode(longList__));
 
-        byte[] _a = NewRLPElement.encodeItem(zeroA).rlpData;
-        byte[] _b = NewRLPElement.encodeList(NewRLPElement.encodeItem(zeroA)).rlpData;
+        byte[] _a = NewRLP.encodeItem(zeroA).rlpData;
+        byte[] _b = NewRLP.encodeList(NewRLP.encodeItem(zeroA)).rlpData;
         byte[] _c = new byte[] { (byte) 0xc1, 0x00 };
 
-        a = NewRLPElement.decode(_a);
-        b = NewRLPElement.decode(_b);
-        c = NewRLPElement.decode(_c);
+        a = NewRLP.decode(_a);
+        b = NewRLP.decode(_b);
+        c = NewRLP.decode(_c);
 
 //        a = NewRLPElement.encodeItem(empty);
 //        b = NewRLPElement.decode(zeroB);
@@ -83,9 +83,9 @@ public class TestHax {
         byte[] y = b.getData();
         byte[] z = b.getData();
 
-        System.out.println(Arrays.toString(x));
-        System.out.println(Arrays.toString(y));
-        System.out.println(Arrays.toString(z));
+//        System.out.println(Arrays.toString(x));
+//        System.out.println(Arrays.toString(y));
+//        System.out.println(Arrays.toString(z));
 
 //        b = NewRLPElement.encodeItem(zeroA);
 //        b = NewRLPElement.encodeItem(zeroB);
@@ -94,10 +94,15 @@ public class TestHax {
 //        b = NewRLPElement.encodeItem("wew", UTF_8);
 //        b = NewRLPElement.encodeItem("Lorem ipsum dolor sit amet, consectetur adipisicing elit", UTF_8);
 //        b = NewRLPElement.encodeList(NewRLPElement.encodeItem("long", UTF_8), NewRLPElement.encodeItem("walk", UTF_8));
-//        b = NewRLPElement.encodeList(
-//                NewRLPElement.encodeItem("cat", UTF_8), NewRLPElement.encodeItem("dog", UTF_8),
-//                NewRLPElement.encodeList(NewRLPElement.encodeItem("cat", UTF_8), NewRLPElement.encodeItem("dog", UTF_8))
-//        );
+        b = NewRLP.encodeList(
+                NewRLP.encodeItem("cat", UTF_8), NewRLP.encodeItem("dog", UTF_8),
+                NewRLP.encodeList(
+                        NewRLP.encodeItem("cat", UTF_8),
+                        NewRLP.encodeItem("dog", UTF_8),
+                        NewRLP.encodeList(NewRLP.encodeItem(new byte[] { (byte) 'p'}), NewRLP.encodeItem("owl", UTF_8), NewRLP.encodeItem("zebra", UTF_8))
+                )
+        );
+
 //        NewRLPElement[] elements = new NewRLPElement[longString.length - 2];
 //        for(int i = 2, j = 0; i < longString.length; i++) {
 //            elements[j++] = NewRLPElement.encodeItem(new byte[] { longString[i] });
@@ -106,12 +111,27 @@ public class TestHax {
 //                elements
 //        );
 
+        NewRLPElement e = NewRLP.decode(b.rlpData, 0);
 
-        System.out.println();
+//        StringBuilder sb0 = new StringBuilder();
+//        e.recursivePrint(sb0);
+        System.out.println(e.toString());
 
-        printRLPCustom(a);
-        printRLPCustom(b);
-        printRLPCustom(c);
+//        StringBuilder sb1 = new StringBuilder();
+//        b.recursivePrint(sb1);
+        System.out.println(b.toString());
+
+        byte[] iii = b.rlpData;
+        NewRLPElement decoded = NewRLP.decode(iii);
+
+        System.out.println(decoded.equals(b));
+
+        RLPList list = RLP.decode2(b.rlpData);
+        RLPList.recursivePrint(list);
+
+//        printRLPCustom(a);
+//        printRLPCustom(b);
+//        printRLPCustom(c);
 
 //        for(char c : "long".toCharArray()) {
 //            System.out.print(HexBin.encode(new byte[] {(byte) c}));
@@ -131,25 +151,25 @@ public class TestHax {
 //        System.out.println();
 
 
-        System.out.println(a.toString());
-        System.out.println(b.toString());
-        System.out.println(c.toString());
-
-        TestUtils.printChars(a.getRLPData());
-        TestUtils.printChars(b.getRLPData());
-        TestUtils.printChars(c.getRLPData());
-
-        TestUtils.printBytes(a.getRLPData());
-        TestUtils.printBytes(b.getRLPData());
-        TestUtils.printBytes(c.getRLPData());
-
-        System.out.println(a.equals(b));
-        System.out.println(a.equals(c));
-        System.out.println(b.equals(c));
-
-        System.out.println(a.hashCode());
-        System.out.println(b.hashCode());
-        System.out.println(c.hashCode());
+//        System.out.println(a.toString());
+//        System.out.println(b.toString());
+//        System.out.println(c.toString());
+//
+//        TestUtils.printChars(a.getRLPData());
+//        TestUtils.printChars(b.getRLPData());
+//        TestUtils.printChars(c.getRLPData());
+//
+//        TestUtils.printBytes(a.getRLPData());
+//        TestUtils.printBytes(b.getRLPData());
+//        TestUtils.printBytes(c.getRLPData());
+//
+//        System.out.println(a.equals(b));
+//        System.out.println(a.equals(c));
+//        System.out.println(b.equals(c));
+//
+//        System.out.println(a.hashCode());
+//        System.out.println(b.hashCode());
+//        System.out.println(c.hashCode());
 
 //        System.out.println(a.hashCode() == b.hashCode());
 
