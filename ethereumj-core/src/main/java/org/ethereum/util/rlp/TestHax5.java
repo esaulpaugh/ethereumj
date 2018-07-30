@@ -30,7 +30,7 @@ public class TestHax5 {
 
         NewRLPElement[] elements = new NewRLPElement[longString.length - 2];
         for(int j = 2, k = 0; j < longString.length; j++) {
-            elements[k++] = encoder.encodeItem(new byte[] { (byte) longString[j] });
+            elements[k++] = encoder.encodeAsItem(new byte[] { (byte) longString[j] });
         }
         byte[][] datas = new byte[elements.length][];
         for(int j = 0; j < datas.length; j++) {
@@ -38,27 +38,21 @@ public class TestHax5 {
         }
 
 //        theirs = RLP.encodeList(datas);
-        byte[] mine = encoder.encodeList(
+        byte[] mine = NewRLPList.fromElements(
                 elements
         ).buffer;
 
         NewRLPElement e = decoder.decode(longString);
-        NewRLPElement f = encoder.encodeItem(0x00);
+        NewRLPElement f = encoder.encodeAsItem(0x00);
 
         System.out.println(
                 e.equals(f)
         );
 
         NewRLPList g = decoder.decodeList(shortList0);
-        g.size();
-        g.get(0);
-        for( NewRLPElement z : g) {
-            System.out.println(z.toString());
-        }
-//        g.remove(0);
 
         System.out.println(
-                !decoder.decode(longList__).equals(encoder.encodeItem(0x00))
+                !decoder.decode(longList__).equals(encoder.encodeAsItem(0x00))
         );
 
         try {
@@ -68,17 +62,17 @@ public class TestHax5 {
         }
 
         NewRLPItem sb = decoder.decodeItem(singleByte);
-        NewRLPItem zz = encoder.encodeItem('z');
+        NewRLPItem zz = encoder.encodeAsItem('z');
 
         System.out.println(sb.toString());
         System.out.println(zz.toString());
 
         System.out.println(
-                decoder.decodeItem(singleByte).equals(encoder.encodeItem('z'))
+                decoder.decodeItem(singleByte).equals(encoder.encodeAsItem('z'))
         );
 
         System.out.println(
-                encoder.encodeItem('z').equals(encoder.encodeItem((long) 'z'))
+                encoder.encodeAsItem('z').equals(encoder.encodeAsItem((long) 'z'))
         );
 
     }

@@ -35,6 +35,11 @@ public class TestHax {
 
     public static void main(String[] args0) {
 
+        System.out.println(-0x01L);
+        long lo = -1;
+        System.out.println(lo & 0xFF);
+
+        if(true)return;
 
         TestUtils.printBytes(RLP.encodeElement(asUnsignedByteArray(BigInteger.ZERO)));
 
@@ -61,6 +66,17 @@ public class TestHax {
         OORLP encoder = new OORLP();
         OORLP decoder = new OORLP();
 
+        NewRLPItem item = encoder.encodeAsItem(0x0000L);
+        System.out.println(item.getType() + " " + item.toString());
+        item = encoder.encodeAsItem(0x007fL);
+        System.out.println(item.getType() + " " + item.toString());
+        item = encoder.encodeAsItem(0x0080L);
+        System.out.println(item.getType() + " " + item.toString());
+        item = encoder.encodeAsItem(0x0099L);
+        System.out.println(item.getType() + " " + item.toString());
+
+        if(true) return;
+
         NewRLPElement a, b, c;
 //        printRLPCustom(NewRLPElement.decode(zeroA));
 //        printRLPCustom(NewRLPElement.decode(zeroB));
@@ -72,8 +88,8 @@ public class TestHax {
 //        printRLPCustom(NewRLPElement.decode(shortList1));
 //        printRLPCustom(NewRLPElement.decode(longList__));
 
-        byte[] _a = encoder.encodeItem(zeroA).buffer;
-        byte[] _b = encoder.encodeList(encoder.encodeItem(zeroA)).buffer;
+        byte[] _a = encoder.encodeAsItem(zeroA).buffer;
+        byte[] _b = NewRLPList.fromElements(encoder.encodeAsItem(zeroA)).buffer;
         byte[] _c = new byte[] { (byte) 0xc1, 0x00 };
 
         a = decoder.decode(_a);
@@ -83,9 +99,9 @@ public class TestHax {
 //        a = NewRLPElement.encodeItem(empty);
 //        b = NewRLPElement.decode(zeroB);
 
-        byte[] x = a.getData();
-        byte[] y = b.getData();
-        byte[] z = b.getData();
+        byte[] x = a.data();
+        byte[] y = b.data();
+        byte[] z = b.data();
 
 //        System.out.println(Arrays.toString(x));
 //        System.out.println(Arrays.toString(y));
@@ -98,12 +114,12 @@ public class TestHax {
 //        b = NewRLPElement.encodeItem("wew", UTF_8);
 //        b = NewRLPElement.encodeItem("Lorem ipsum dolor sit amet, consectetur adipisicing elit", UTF_8);
 //        b = NewRLPElement.encodeList(NewRLPElement.encodeItem("long", UTF_8), NewRLPElement.encodeItem("walk", UTF_8));
-        b = encoder.encodeList(
-                encoder.encodeItem("cat", UTF_8), encoder.encodeItem("dog", UTF_8),
-                encoder.encodeList(
-                        encoder.encodeItem("cat", UTF_8),
-                        encoder.encodeItem("dog", UTF_8),
-                        encoder.encodeList(encoder.encodeItem(new byte[] { (byte) 'p'}), encoder.encodeItem("owl", UTF_8), encoder.encodeItem("zebra", UTF_8))
+        b = NewRLPList.fromElements(
+                encoder.encodeAsItem("cat", UTF_8), encoder.encodeAsItem("dog", UTF_8),
+                NewRLPList.fromElements(
+                        encoder.encodeAsItem("cat", UTF_8),
+                        encoder.encodeAsItem("dog", UTF_8),
+                        NewRLPList.fromElements(encoder.encodeAsItem(new byte[] { (byte) 'p'}), encoder.encodeAsItem("owl", UTF_8), encoder.encodeAsItem("zebra", UTF_8))
                 )
         );
 
@@ -181,7 +197,7 @@ public class TestHax {
 
     private static final void printRLPCustom(NewRLPElement element) {
         switch (element.getType()) {
-        case SINGLE_BYTE: System.out.println((char) element.buffer[0]); break;
+        case ITEM_SINGLE_BYTE: System.out.println((char) element.buffer[0]); break;
         case ITEM_SHORT: System.out.println(HexBin.encode(new byte[] { element.buffer[0] }) + ", . . . "); break;
         case ITEM_LONG: System.out.println(HexBin.encode(new byte[] { element.buffer[0], element.buffer[1], element.buffer[2] }) + " . . ."); break;
         case LIST_SHORT: System.out.println(HexBin.encode(element.buffer)); break;

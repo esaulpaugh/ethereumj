@@ -19,7 +19,7 @@ public class TestHax3 {
 
     public static void main(String[] args0) {
         for(byte[] test : tests) {
-            long lo = NewRLP.decodeLong(test, 0);
+            long lo = OORLP.decodeLong(test, 0);
             System.out.println(lo);
         }
     }

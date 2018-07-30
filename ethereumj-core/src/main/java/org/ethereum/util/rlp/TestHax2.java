@@ -1,12 +1,6 @@
 package org.ethereum.util.rlp;
 
 import com.sun.org.apache.xerces.internal.impl.dv.util.HexBin;
-import org.ethereum.util.RLP;
-import org.ethereum.util.RLPList;
-import org.ethereum.util.rlp.NewRLP;
-import org.ethereum.util.rlp.NewRLPElement;
-import org.ethereum.util.rlp.NewRLPList;
-import org.ethereum.util.rlp.OORLP;
 
 import java.util.Arrays;
 
@@ -39,61 +33,58 @@ public class TestHax2 {
 
     public static void main(String[] args0) {
 
-        for(int i = 0x00; i <= 0xFF; i++) {
-            if(i % 8 == 0) {
-                System.out.println();
-            }
-            System.out.print("case 0x" + HexBin.encode(new byte[] { (byte) i }) + ": ");
-        }
-
+//        for(int i = 0x00; i <= 0xFF; i++) {
+//            if(i % 8 == 0) {
+//                System.out.println();
+//            }
+//            System.out.print("case 0x" + HexBin.encode(new byte[] { (byte) i }) + ": ");
+//        }
+//
 //        if(true) return;
 
         byte[] theirs, mine;
 
         byte[] x = new byte[80];
         int i = 0;
-        i = NewRLP.encodeLong((byte) 0x0, x, i);
-        i = NewRLP.encodeLong((short) -0x000, x, i);
-        i = NewRLP.encodeLong(0x00000000, x, i);
-        i = NewRLP.encodeLong(0x00L, x, i);
-        i = NewRLP.encodeString("yipee", UTF_8, x, i);
+        i = NewRLP.encode((byte) 0x0, x, i);
+        i = NewRLP.encode((short) -0x000, x, i);
+        i = NewRLP.encode(0x00000000, x, i);
+        i = NewRLP.encode(0x00L, x, i);
+        i = NewRLP.encode("yipee", UTF_8, x, i);
         System.out.println(i);
 
         System.out.println(HexBin.encode(x));
 //        System.out.println(HexBin.encode(NewRLP.longToBytes(0)));
 
-        long lo0 = NewRLP.decodeLong(new byte[] {0x00}, 0);
+        long lo0 = OORLP.decodeLong(new byte[] {0x00}, 0);
 
-        long lo1 = NewRLP.decodeLong(new byte[] {(byte)0x80}, 0);
-        long lo2 = NewRLP.decodeLong(new byte[] {(byte)0x81, 0x00}, 0);
-        long lo3 = NewRLP.decodeLong(new byte[] {(byte)0x82, 0x00, 0x00}, 0);
-        long lo4 = NewRLP.decodeLong(new byte[] {(byte)0x83, 0x00, 0x00, 0x00}, 0);
-        long lo5 = NewRLP.decodeLong(new byte[] {(byte)0x84, 0x00, 0x00, 0x00, 0x00}, 0);
-        long lo6 = NewRLP.decodeLong(new byte[] {(byte)0x85, 0x00, 0x00, 0x00, 0x00, 0x00}, 0);
-        long lo7 = NewRLP.decodeLong(new byte[] {(byte)0x86, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, 0);
-        long lo8 = NewRLP.decodeLong(new byte[] {(byte)0x87, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, 0);
-        long lo9 = NewRLP.decodeLong(new byte[] {(byte)0x88, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, 0);
+        long lo1 = OORLP.decodeLong(new byte[] {(byte)0x80}, 0);
+        long lo2 = OORLP.decodeLong(new byte[] {(byte)0x81, 0x00}, 0);
+        long lo3 = OORLP.decodeLong(new byte[] {(byte)0x82, 0x00, 0x00}, 0);
+        long lo4 = OORLP.decodeLong(new byte[] {(byte)0x83, 0x00, 0x00, 0x00}, 0);
+        long lo5 = OORLP.decodeLong(new byte[] {(byte)0x84, 0x00, 0x00, 0x00, 0x00}, 0);
+        long lo6 = OORLP.decodeLong(new byte[] {(byte)0x85, 0x00, 0x00, 0x00, 0x00, 0x00}, 0);
+        long lo7 = OORLP.decodeLong(new byte[] {(byte)0x86, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, 0);
+        long lo8 = OORLP.decodeLong(new byte[] {(byte)0x87, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, 0);
+        long lo9 = OORLP.decodeLong(new byte[] {(byte)0x88, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, 0);
 
         try {
-            long lo9_ = NewRLP.decodeLong(new byte[]{(byte) 0x88, 0x00, (byte) 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01}, 0);
+            long lo9_ = OORLP.decodeLong(new byte[]{(byte) 0x88, 0x00, (byte) 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01}, 0);
         } catch (NumberFormatException nfe) {
             System.out.println(nfe.getMessage());
         }
 
+        byte[] data0 = OORLP.decode(new byte[] {0x00}).data();
 
-        OORLP decoder = new OORLP();
-
-        byte[] data0 = decoder.decode(new byte[] {0x00}).getData();
-
-        byte[] data1 = decoder.decode(new byte[] {(byte)0x80}).getData();
-        byte[] data2 = decoder.decode(new byte[] {(byte)0x81, 0x00}).getData();
-        byte[] data3 = decoder.decode(new byte[] {(byte)0x82, 0x00, 0x00}).getData();
-        byte[] data4 = decoder.decode(new byte[] {(byte)0x83, 0x00, 0x00, 0x00}).getData();
-        byte[] data5 = decoder.decode(new byte[] {(byte)0x84, 0x00, 0x00, 0x00, 0x00}, 0).getData();
-        byte[] data6 = decoder.decode(new byte[] {(byte)0x85, 0x00, 0x00, 0x00, 0x00, 0x00}, 0).getData();
-        byte[] data7 = decoder.decode(new byte[] {(byte)0x86, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, 0).getData();
-        byte[] data8 = decoder.decode(new byte[] {(byte)0x87, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, 0).getData();
-        byte[] data9 = decoder.decode(new byte[] {(byte)0x88, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, 0).getData();
+        byte[] data1 = OORLP.decode(new byte[] {(byte)0x80}).data();
+        byte[] data2 = OORLP.decode(new byte[] {(byte)0x81, 0x00}).data();
+        byte[] data3 = OORLP.decode(new byte[] {(byte)0x82, 0x00, 0x00}).data();
+        byte[] data4 = OORLP.decode(new byte[] {(byte)0x83, 0x00, 0x00, 0x00}).data();
+        byte[] data5 = OORLP.decode(new byte[] {(byte)0x84, 0x00, 0x00, 0x00, 0x00}, 0).data();
+        byte[] data6 = OORLP.decode(new byte[] {(byte)0x85, 0x00, 0x00, 0x00, 0x00, 0x00}, 0).data();
+        byte[] data7 = OORLP.decode(new byte[] {(byte)0x86, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, 0).data();
+        byte[] data8 = OORLP.decode(new byte[] {(byte)0x87, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, 0).data();
+        byte[] data9 = OORLP.decode(new byte[] {(byte)0x88, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, 0).data();
 
         System.out.println(lo0 + ", ");
         System.out.println(lo1 + ", " + lo2 + ", " + lo3 + ", " + lo4 + ", " + lo5 + ", " + lo6 + ", " + lo7 + ", " + lo8 + ", " + lo9);

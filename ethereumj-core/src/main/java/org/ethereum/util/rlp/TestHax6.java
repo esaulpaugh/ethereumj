@@ -17,7 +17,7 @@ public class TestHax6 {
 //
 //        System.out.println(Arrays.toString(enc));
 //
-//        System.out.println(Arrays.toString(e.getData()));
+//        System.out.println(Arrays.toString(e.data()));
 //
 //        System.out.println(e.encodingLength());
 //
@@ -36,48 +36,49 @@ public class TestHax6 {
 //        System.out.println(e.hashCode());
 
         // -----
-        byte[] buffer = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 };
-
-        System.out.println(Long.toBinaryString(Long.MIN_VALUE));
-        System.out.println(Long.toBinaryString(-1));
-        System.out.println(Long.toBinaryString(0));
-        System.out.println(Long.toBinaryString(1));
-        System.out.println(Long.toBinaryString(Long.MAX_VALUE));
-        System.out.println(Long.MIN_VALUE ^ Long.MAX_VALUE);
-
-        for(long i = Long.MIN_VALUE; i < Long.MIN_VALUE + 1000; i++) {
-            int s = NewRLP.putLong(i, buffer, 0);
-            System.out.println(Arrays.toString(buffer));
-            System.out.println(HexBin.encode(buffer));
-            long x = NewRLP.decodeLong(buffer, 0, s);
-            System.out.println(x);
-        }
-
-        if(true) return;
-
-        long a, b, c;
-
-//        ByteBuffer bb = ByteBuffer.allocate(8);
-//        byte[] buf = bb.putLong(65537).array();
-//        System.out.println(Arrays.toString(buf));
-//        System.out.println(HexBin.encode(buf));
-//        long negTwo = bb.getLong(0);
-//        System.out.println(negTwo);
-
-
-        a = 17000000;
-        System.out.println(a);
-        int s = NewRLP.putLong(a, buffer, 0);
-        System.out.println(Arrays.toString(buffer));
-        System.out.println(HexBin.encode(buffer));
-        b = NewRLP.decodeLong(buffer, 0, s);
-        System.out.println(b);
-//        bb.flip()
-
-        s = NewRLP.putLong(b, buffer, 0);
-        System.out.println(Arrays.toString(buffer));
-        System.out.println(HexBin.encode(buffer));
-        c = NewRLP.decodeLong(buffer, 0, s);
+//        byte[] buffer = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 };
+//
+//        System.out.println(Long.toBinaryString(Long.MIN_VALUE));
+//        System.out.println(Long.toBinaryString(-1));
+//        System.out.println(Long.toBinaryString(0));
+//        System.out.println(Long.toBinaryString(1));
+//        System.out.println(Long.toBinaryString(Long.MAX_VALUE));
+//        System.out.println(Long.MIN_VALUE ^ Long.MAX_VALUE);
+//
+//        for(long i = Long.MIN_VALUE; i < Long.MIN_VALUE + 1000; i++) {
+//            int s = NewRLP.putLong(i, buffer, 0);
+//            System.out.println(Arrays.toString(buffer));
+//            System.out.println(HexBin.encode(buffer));
+//            long x = NewRLP.decodeLong(buffer, 0, s);
+//            System.out.println(x);
+//        }
+//
+//        if(true) return;
+//
+//        long a, b, c;
+//
+////        ByteBuffer bb = ByteBuffer.allocate(8);
+////        byte[] buf = bb.putLong(65537).array();
+////        System.out.println(Arrays.toString(buf));
+////        System.out.println(HexBin.encode(buf));
+////        long negTwo = bb.getLong(0);
+////        System.out.println(negTwo);
+//
+//
+//        a = 17000000;
+//        System.out.println(a);
+//        int s = NewRLP.putLong(a, buffer, 0);
+//        System.out.println(Arrays.toString(buffer));
+//        System.out.println(HexBin.encode(buffer));
+//        b = NewRLP.decodeLong(buffer, 0, s);
+//        System.out.println(b);
+////        bb.flip()
+//
+//        s = NewRLP.putLong(b, buffer, 0);
+//        System.out.println(Arrays.toString(buffer));
+//        System.out.println(HexBin.encode(buffer));
+//        c = NewRLP.decodeLong(buffer, 0, s);
+//        System.out.println("c_reverse = " + Long.reverseBytes(c));
 
 //        bb = ByteBuffer.allocate(8);
 //        buf = bb.putLong(-72057594037927937L).array();
@@ -86,7 +87,7 @@ public class TestHax6 {
 //        guinea = bb.getLong(0);
 //        System.out.println(guinea);
 
-        System.out.println("c_reverse = " + Long.reverseBytes(c));
+
 
         // --
 

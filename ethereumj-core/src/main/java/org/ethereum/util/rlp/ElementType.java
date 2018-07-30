@@ -61,11 +61,13 @@ public enum ElementType {
      * range of the first byte is thus [0xf8, 0xff].
      */
 
-    SINGLE_BYTE(0, false),  // 0x00 + 128 = 0x80
-    ITEM_SHORT(0x80, true), // 0x80 + 56 = 0xb8
-    ITEM_LONG(0xb7, false), // 0xb8 + 8 = 0xc0
-    LIST_SHORT(0xc0, true), // 0xc0 + 55 = 0xf7
-    LIST_LONG(0xf7, false); // 0xf7 + 8 = 0xFF
+    ITEM_SINGLE_BYTE(0, false), // 0x00 + 128 = 0x80
+    ITEM_SHORT(0x80, true),     // 0x80 + 56 = 0xb8
+    ITEM_LONG(0xb7, false),     // 0xb8 + 8 = 0xc0
+    LIST_SHORT(0xc0, true),     // 0xc0 + 55 = 0xf7
+    LIST_LONG(0xf7, false);     // 0xf7 + 8 = 0xFF
+
+    public static final int LONG_DATA_THRESHOLD = 56;
 
     public final byte offset;
     private final boolean isShort;
@@ -79,9 +81,14 @@ public enum ElementType {
         return isShort;
     }
 
-    public static ElementType type(byte byteZero) {
+    /**
+     *
+     * @param leadByte
+     * @return
+     */
+    static ElementType type(int leadByte) {
 
-        switch (byteZero & 0xFF) {
+        switch (leadByte & 0xFF) { // make positive
         case 0x00: case 0x01: case 0x02: case 0x03: case 0x04: case 0x05: case 0x06: case 0x07:
         case 0x08: case 0x09: case 0x0A: case 0x0B: case 0x0C: case 0x0D: case 0x0E: case 0x0F:
         case 0x10: case 0x11: case 0x12: case 0x13: case 0x14: case 0x15: case 0x16: case 0x17:
@@ -97,7 +104,7 @@ public enum ElementType {
         case 0x60: case 0x61: case 0x62: case 0x63: case 0x64: case 0x65: case 0x66: case 0x67:
         case 0x68: case 0x69: case 0x6A: case 0x6B: case 0x6C: case 0x6D: case 0x6E: case 0x6F:
         case 0x70: case 0x71: case 0x72: case 0x73: case 0x74: case 0x75: case 0x76: case 0x77:
-        case 0x78: case 0x79: case 0x7A: case 0x7B: case 0x7C: case 0x7D: case 0x7E: case 0x7F: return SINGLE_BYTE;
+        case 0x78: case 0x79: case 0x7A: case 0x7B: case 0x7C: case 0x7D: case 0x7E: case 0x7F: return ITEM_SINGLE_BYTE;
 
         case 0x80: case 0x81: case 0x82: case 0x83: case 0x84: case 0x85: case 0x86: case 0x87:
         case 0x88: case 0x89: case 0x8A: case 0x8B: case 0x8C: case 0x8D: case 0x8E: case 0x8F:
@@ -122,7 +129,7 @@ public enum ElementType {
 
 //        int intVal = byteZero & 0xFF;
 //        if(intVal < 0x80)
-//            return SINGLE_BYTE;
+//            return ITEM_SINGLE_BYTE;
 //        if(intVal < 0xb8)
 //            return ITEM_SHORT;
 //        if(intVal < 0xc0)
@@ -130,5 +137,9 @@ public enum ElementType {
 //        if(intVal < 0xf8)
 //            return LIST_SHORT;
 //        return LIST_LONG;
+    }
+
+    static boolean isSingleByteItem(long val) {
+        return val >= 0 && val < 0x80; // (ITEM_SHORT.offset & 0xFF)
     }
 }
