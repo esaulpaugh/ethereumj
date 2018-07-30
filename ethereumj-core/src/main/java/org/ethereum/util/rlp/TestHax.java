@@ -58,6 +58,9 @@ public class TestHax {
 //            System.out.println(e.toString());
 //        }
 
+        OORLP encoder = new OORLP();
+        OORLP decoder = new OORLP();
+
         NewRLPElement a, b, c;
 //        printRLPCustom(NewRLPElement.decode(zeroA));
 //        printRLPCustom(NewRLPElement.decode(zeroB));
@@ -69,13 +72,13 @@ public class TestHax {
 //        printRLPCustom(NewRLPElement.decode(shortList1));
 //        printRLPCustom(NewRLPElement.decode(longList__));
 
-        byte[] _a = OORLP.encodeItem(zeroA).buffer;
-        byte[] _b = OORLP.encodeList(OORLP.encodeItem(zeroA)).buffer;
+        byte[] _a = encoder.encodeItem(zeroA).buffer;
+        byte[] _b = encoder.encodeList(encoder.encodeItem(zeroA)).buffer;
         byte[] _c = new byte[] { (byte) 0xc1, 0x00 };
 
-        a = OORLP.decode(_a);
-        b = OORLP.decode(_b);
-        c = OORLP.decode(_c);
+        a = decoder.decode(_a);
+        b = decoder.decode(_b);
+        c = decoder.decode(_c);
 
 //        a = NewRLPElement.encodeItem(empty);
 //        b = NewRLPElement.decode(zeroB);
@@ -95,12 +98,12 @@ public class TestHax {
 //        b = NewRLPElement.encodeItem("wew", UTF_8);
 //        b = NewRLPElement.encodeItem("Lorem ipsum dolor sit amet, consectetur adipisicing elit", UTF_8);
 //        b = NewRLPElement.encodeList(NewRLPElement.encodeItem("long", UTF_8), NewRLPElement.encodeItem("walk", UTF_8));
-        b = OORLP.encodeList(
-                OORLP.encodeItem("cat", UTF_8), OORLP.encodeItem("dog", UTF_8),
-                OORLP.encodeList(
-                        OORLP.encodeItem("cat", UTF_8),
-                        OORLP.encodeItem("dog", UTF_8),
-                        OORLP.encodeList(OORLP.encodeItem(new byte[] { (byte) 'p'}), OORLP.encodeItem("owl", UTF_8), OORLP.encodeItem("zebra", UTF_8))
+        b = encoder.encodeList(
+                encoder.encodeItem("cat", UTF_8), encoder.encodeItem("dog", UTF_8),
+                encoder.encodeList(
+                        encoder.encodeItem("cat", UTF_8),
+                        encoder.encodeItem("dog", UTF_8),
+                        encoder.encodeList(encoder.encodeItem(new byte[] { (byte) 'p'}), encoder.encodeItem("owl", UTF_8), encoder.encodeItem("zebra", UTF_8))
                 )
         );
 
@@ -112,7 +115,7 @@ public class TestHax {
 //                elements
 //        );
 
-        NewRLPElement e = OORLP.decode(b.buffer, 0);
+        NewRLPElement e = decoder.decode(b.buffer, 0);
 
 //        StringBuilder sb0 = new StringBuilder();
 //        e.recursivePrint(sb0);
@@ -123,7 +126,7 @@ public class TestHax {
         System.out.println(b.toString());
 
         byte[] iii = b.buffer;
-        NewRLPElement decoded = OORLP.decode(iii);
+        NewRLPElement decoded = decoder.decode(iii);
 
         System.out.println(decoded.equals(b));
 

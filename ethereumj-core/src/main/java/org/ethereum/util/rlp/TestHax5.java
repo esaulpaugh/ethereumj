@@ -25,10 +25,12 @@ public class TestHax5 {
 
     public static void main(String[] args0) {
 
+        OORLP encoder = new OORLP();
+        OORLP decoder = new OORLP();
 
         NewRLPElement[] elements = new NewRLPElement[longString.length - 2];
         for(int j = 2, k = 0; j < longString.length; j++) {
-            elements[k++] = OORLP.encodeItem(new byte[] { (byte) longString[j] });
+            elements[k++] = encoder.encodeItem(new byte[] { (byte) longString[j] });
         }
         byte[][] datas = new byte[elements.length][];
         for(int j = 0; j < datas.length; j++) {
@@ -36,18 +38,18 @@ public class TestHax5 {
         }
 
 //        theirs = RLP.encodeList(datas);
-        byte[] mine = OORLP.encodeList(
+        byte[] mine = encoder.encodeList(
                 elements
         ).buffer;
 
-        NewRLPElement e = OORLP.decode(longString);
-        NewRLPElement f = OORLP.encodeLong(0x00);
+        NewRLPElement e = decoder.decode(longString);
+        NewRLPElement f = encoder.encodeItem(0x00);
 
         System.out.println(
                 e.equals(f)
         );
 
-        NewRLPList g = OORLP.decodeList(shortList0);
+        NewRLPList g = decoder.decodeList(shortList0);
         g.size();
         g.get(0);
         for( NewRLPElement z : g) {
@@ -56,21 +58,27 @@ public class TestHax5 {
 //        g.remove(0);
 
         System.out.println(
-                !OORLP.decode(longList__).equals(OORLP.encodeLong(0x00))
+                !decoder.decode(longList__).equals(encoder.encodeItem(0x00))
         );
 
         try {
-            OORLP.decode(empty);
-        } catch (IllegalArgumentException iae) {
+            decoder.decode(empty);
+        } catch (ArrayIndexOutOfBoundsException aioobe) {
 
         }
 
+        NewRLPItem sb = decoder.decodeItem(singleByte);
+        NewRLPItem zz = encoder.encodeItem('z');
+
+        System.out.println(sb.toString());
+        System.out.println(zz.toString());
+
         System.out.println(
-                OORLP.decode(singleByte).equals(OORLP.encodeLong('z'))
+                decoder.decodeItem(singleByte).equals(encoder.encodeItem('z'))
         );
 
         System.out.println(
-                OORLP.encodeChar('z').equals(OORLP.encodeLong('z'))
+                encoder.encodeItem('z').equals(encoder.encodeItem((long) 'z'))
         );
 
     }
