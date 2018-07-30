@@ -2,7 +2,6 @@ package org.ethereum.util.rlp;
 
 import org.apache.commons.lang3.concurrent.ConcurrentException;
 import org.apache.commons.lang3.concurrent.LazyInitializer;
-import org.ethereum.util.ElementType;
 
 import java.util.Arrays;
 
@@ -15,10 +14,6 @@ public abstract class NewRLPElement {
     protected final int index;
 
     private transient final LazyInitializer<Metadata> lazyMetadata;
-
-    NewRLPElement(byte[] buffer) {
-        this(buffer, 0);
-    }
 
     NewRLPElement(byte[] buffer, int index) {
         this.buffer = buffer;
@@ -33,10 +28,6 @@ public abstract class NewRLPElement {
     }
 
     protected abstract void recursivePrint(StringBuilder sb);
-
-    public byte[] getBuffer() {
-        return buffer;
-    }
 
     public int getIndex() {
         return index;
@@ -95,7 +86,7 @@ public abstract class NewRLPElement {
 
         int lengthOfLength = leadByte - type.offset;
 
-        long length = NewRLP.bytesToLong(buffer, index + 1, lengthOfLength);
+        long length = NewRLP.decodeLong(buffer, index + 1, lengthOfLength); // TODO test
 
         return new Metadata(type, index + 1 + lengthOfLength, (int) length);
     }
@@ -127,11 +118,13 @@ public abstract class NewRLPElement {
 
         NewRLPElement other = (NewRLPElement) obj;
 
-        if(this.encodingLength() != other.encodingLength()) {
+        final int encLen = this.encodingLength();
+
+        if(encLen != other.encodingLength()) {
             return false;
         }
 
-        final int end = this.index + this.encodingLength();
+        final int end = this.index + encLen;
         for (int i = this.index, j = other.index; i < end; i++, j++) {
             if(this.buffer[i] != other.buffer[j]) {
                 return false;

@@ -1,7 +1,6 @@
 package org.ethereum.util.rlp;
 
 import org.ethereum.util.Buildable;
-import org.ethereum.util.ElementType;
 
 import java.util.*;
 

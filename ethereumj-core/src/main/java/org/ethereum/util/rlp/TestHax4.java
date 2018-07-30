@@ -60,27 +60,27 @@ public class TestHax4 {
         long start, end;
         double elapsed;
 
-        byte[] xx = new byte[30];
-        for(long i = Long.MAX_VALUE; i > Long.MAX_VALUE - 1000111000; i--) {
-            int n = NewRLP.putLong(i, xx, 5);
-            long lo = NewRLP.bytesToLong(xx, 5, n);
-            if(i != lo) {
-                throw new Exception("!!");
-            }
-        }
-        start = System.nanoTime();
-        for(long i = Long.MAX_VALUE; i > Long.MAX_VALUE - 1000111000; i--) {
-            int n = NewRLP.putLong(i, xx, 5);
-            long lo = NewRLP.bytesToLong(xx, 5, n);
-            if(i != lo) {
-                throw new Exception("!!");
-            }
-        }
-        end = System.nanoTime();
-
-        elapsed = (end - start) / 1000000.0;
-
-        System.out.println("elapsed = " + elapsed);
+//        byte[] xx = new byte[30];
+//        for(long i = Long.MAX_VALUE; i > Long.MAX_VALUE - 1000111000; i--) {
+//            int n = NewRLP.putLong(i, xx, 5);
+//            long lo = NewRLP.bytesToLong(xx, 5, n);
+//            if(i != lo) {
+//                throw new Exception("!!");
+//            }
+//        }
+//        start = System.nanoTime();
+//        for(long i = Long.MAX_VALUE; i > Long.MAX_VALUE - 1000111000; i--) {
+//            int n = NewRLP.putLong(i, xx, 5);
+//            long lo = NewRLP.bytesToLong(xx, 5, n);
+//            if(i != lo) {
+//                throw new Exception("!!");
+//            }
+//        }
+//        end = System.nanoTime();
+//
+//        elapsed = (end - start) / 1000000.0;
+//
+//        System.out.println("elapsed = " + elapsed);
 
 //        long x_ = NewRLP.bytesToLong(xx);
 
