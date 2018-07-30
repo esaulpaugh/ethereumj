@@ -2,9 +2,17 @@ package org.ethereum.util.rlp;
 
 import org.ethereum.util.rlp.NewRLP;
 
+import java.math.BigInteger;
+
 public class TestHax4 {
 
     public static void main(String[] args0) throws Exception {
+
+        byte[] buffer = new byte[16];
+        int destIndex = NewRLP.encode(BigInteger.valueOf(Long.MAX_VALUE), buffer, 0);
+        BigInteger bi = OORLP.decodeBigInteger(buffer, 0);
+
+        System.out.println(bi);
 
 //        long x = 0, y = 1, z = Integer.MIN_VALUE;
 //

@@ -8,7 +8,7 @@ import java.util.Arrays;
 /**
  * Created by Evo on 1/19/2017.
  */
-public abstract class NewRLPElement {
+abstract class NewRLPElement {
 
     protected final byte[] buffer;
     protected final int index;
@@ -21,13 +21,12 @@ public abstract class NewRLPElement {
         this.lazyMetadata = new LazyInitializer<Metadata>() {
             @Override
             protected Metadata initialize() {
-                System.out.println("*** initialize() metadata ***");
                 return deriveMetadata();
             }
         };
     }
 
-    protected abstract void recursivePrint(StringBuilder sb);
+    protected abstract void recursivePrint(boolean hex, StringBuilder sb);
 
     public int getIndex() {
         return index;
@@ -54,8 +53,14 @@ public abstract class NewRLPElement {
         return metadata.dataIndex + metadata.dataLength;
     }
 
-    public byte[] getEncoding() {
+    public byte[] encoding() {
         return Arrays.copyOfRange(buffer, index, getEndIndex());
+    }
+
+    public int exportEncoding(byte[] dest, int destIndex) {
+        int encodingLen = encodingLength();
+        System.arraycopy(buffer, index, dest, destIndex, encodingLen);
+        return destIndex + encodingLen;
     }
 
     public int getDataIndex() {
@@ -66,35 +71,45 @@ public abstract class NewRLPElement {
         return getMetadata().dataLength;
     }
 
-    public byte[] getData() {
+    public byte[] data() {
         Metadata metadata = getMetadata();
         return Arrays.copyOfRange(buffer, metadata.dataIndex, metadata.dataIndex + metadata.dataLength);
     }
 
+    public int exportData(byte[] dest, int destIndex) {
+        Metadata metadata = getMetadata();
+        System.arraycopy(buffer, metadata.dataIndex, dest, destIndex, metadata.dataLength);
+        return destIndex + metadata.dataLength;
+    }
+
     private Metadata deriveMetadata() {
+
+//        System.out.println("deriveMetadata() " + System.nanoTime());
 
         final byte leadByte = buffer[index];
         final ElementType type = ElementType.type(leadByte);
 
-        if(type == ElementType.SINGLE_BYTE) {
+        if(type == ElementType.ITEM_SINGLE_BYTE) {
             return new Metadata(type, index, 1);
         }
 
         if(type.isShort()) {
             return new Metadata(type, index + 1, leadByte - type.offset);
         }
-
+// TODO test edge cases
         int lengthOfLength = leadByte - type.offset;
 
-        long length = NewRLP.decodeLong(buffer, index + 1, lengthOfLength); // TODO test
+        long length = NewRLP.decodeLong(buffer, index + 1, lengthOfLength);
 
         return new Metadata(type, index + 1 + lengthOfLength, (int) length);
     }
 
-    protected static final class Metadata {
-        protected final ElementType type;
-        protected final int dataIndex;
-        protected final int dataLength;
+    static final class Metadata {
+        final ElementType type;
+        final int dataIndex;
+        final int dataLength;
+        int size = -1;
+//        protected final List<NewRLPElement> elements;
 
         private Metadata(ElementType type, int dataIndex, int dataLength) {
             this.type = type;
@@ -103,10 +118,16 @@ public abstract class NewRLPElement {
         }
     }
 
+    public String toUtf8() {
+        StringBuilder sb = new StringBuilder();
+        recursivePrint(false, sb);
+        return sb.toString();
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        recursivePrint(sb);
+        recursivePrint(true, sb);
         return sb.toString();
     }
 

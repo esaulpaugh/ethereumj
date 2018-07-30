@@ -3,43 +3,20 @@ package org.ethereum.util.rlp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.math.BigInteger;
 import java.nio.charset.Charset;
 
-import static org.ethereum.util.rlp.ElementType.ITEM_LONG;
-import static org.ethereum.util.rlp.ElementType.ITEM_SHORT;
-import static org.ethereum.util.rlp.ElementType.LIST_LONG;
+import static org.ethereum.util.rlp.ElementType.*;
 
-// TODO split into encoder and decoder
 public class NewRLP {
 
     private static final Logger logger = LoggerFactory.getLogger("newrlp");
-
-    private static final int LONG_DATA_THRESHOLD = 56;
 
     /* ******************************************************
      *                      DECODING                        *
      * ******************************************************/
 
-    public static long decodeLong(byte[] data) {
-        return decodeLong(data, 0);
-    }
-
-    /**
-     * "Deserialised positive integers with leading zeroes must be treated as invalid."
-     *
-     */
-    public static long decodeLong(byte[] buffer, int i) {
-        final byte first = buffer[i];
-        switch (ElementType.type(first)) {
-        case SINGLE_BYTE: return first;
-        case ITEM_SHORT: {
-            return decodeLong(buffer, i + 1, first - ITEM_SHORT.offset);
-        }
-        default: throw new RuntimeException("wrong decode attempt");
-        }
-    }
-
-    public static long decodeLong(final byte[] buffer, final int i, final int numBytes) {
+    static long decodeLong(final byte[] buffer, final int i, final int numBytes) {
 
         int shiftAmount = 0;
 
@@ -68,156 +45,13 @@ public class NewRLP {
 //     * ******************************************************/
 
     /**
-     * "Deserialised positive integers with leading zeroes must be treated as invalid."
-     *
-     */
-//    public static long bytesToLong(byte[] data, int i, int len) {
-//
-//    }
-
-//    public static int getFirstListElement(byte[] payload, int pos) {
-//        return decode(payload, pos).getDataIndex();
-//    }
-
-//    public static byte[] longToBytes2(long val) {
-//        byte[]
-//    }
-
-    // TODO
-//    public static int encodeBigInteger(BigInteger srcBigInteger, byte[] o, int i) {
-//        if (srcBigInteger.equals(BigInteger.ZERO))
-//            return encodeLong(0, o, i);
-//        else
-//            return encodeBytes(asUnsignedByteArray(srcBigInteger), o, i);
-//    }
-
-//    static byte[] encodeLong(long val) {
-//        if(val == 0) {// special case
-//            return ZERO_BYTE_ARRAY;
-//        }
-//        byte[] x = longToBytes(val);
-//        int n = putLong(val, o, i+1);
-//        o[i] = (byte) (ElementType.ITEM_SHORT.offset + n);
-//        return i + 1 + n;
-//    }
-
-//    public static byte[] longToBytes(long val) {
-//
-//        byte a = 0, b = 0, c = 0, d = 0, e = 0, f = 0, g = 0, h;
-//
-//        int n = 1;
-//        h = (byte) (val & 0xFF);
-//        val = val >>> Byte.SIZE;
-//        if(val != 0) {
-//            n = 2;
-//            g = (byte) (val & 0xFF);
-//            val = val >>> Byte.SIZE;
-//            if(val != 0) {
-//                n = 3;
-//                f = (byte) (val & 0xFF);
-//                val = val >>> Byte.SIZE;
-//                if(val != 0) {
-//                    n = 4;
-//                    e = (byte) (val & 0xFF);
-//                    val = val >>> Byte.SIZE;
-//                    if(val != 0) {
-//                        n = 5;
-//                        d = (byte) (val & 0xFF);
-//                        val = val >>> Byte.SIZE;
-//                        if(val != 0) {
-//                            n = 6;
-//                            c = (byte) (val & 0xFF);
-//                            val = val >>> Byte.SIZE;
-//                            if(val != 0) {
-//                                n = 7;
-//                                b = (byte) (val & 0xFF);
-//                                val = val >>> Byte.SIZE;
-//                                if(val != 0) {
-//                                    n = 8;
-//                                    a = (byte) (val & 0xFF);
-//                                }
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//
-//        switch (n) {
-//        case 1: return new byte[] { h };
-//        case 2: return new byte[] { g, h };
-//        case 3: return new byte[] { f, g, h };
-//        case 4: return new byte[] { e, f, g, h };
-//        case 5: return new byte[] { d, e, f, g, h };
-//        case 6: return new byte[] { c, d, e, f, g, h };
-//        case 7: return new byte[] { b, c, d, e, f, g, h };
-//        default: return new byte[]{ a, b, c, d, e, f, g, h};
-//        }
-//    }
-
-    public static byte[] encodeShortItem(long val) {
-
-        byte a = 0, b = 0, c = 0, d = 0, e = 0, f = 0, g = 0, h;
-
-        int n = 1;
-        h = (byte) (val & 0xFF);
-        val = val >>> Byte.SIZE;
-        if(val != 0) {
-            n = 2;
-            g = (byte) (val & 0xFF);
-            val = val >>> Byte.SIZE;
-            if(val != 0) {
-                n = 3;
-                f = (byte) (val & 0xFF);
-                val = val >>> Byte.SIZE;
-                if(val != 0) {
-                    n = 4;
-                    e = (byte) (val & 0xFF);
-                    val = val >>> Byte.SIZE;
-                    if(val != 0) {
-                        n = 5;
-                        d = (byte) (val & 0xFF);
-                        val = val >>> Byte.SIZE;
-                        if(val != 0) {
-                            n = 6;
-                            c = (byte) (val & 0xFF);
-                            val = val >>> Byte.SIZE;
-                            if(val != 0) {
-                                n = 7;
-                                b = (byte) (val & 0xFF);
-                                val = val >>> Byte.SIZE;
-                                if(val != 0) {
-                                    n = 8;
-                                    a = (byte) (val & 0xFF);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        final byte lead = (byte) (ElementType.ITEM_SHORT.offset + n);
-        switch (n) {
-        case 1: return new byte[] { lead, h };
-        case 2: return new byte[] { lead, g, h };
-        case 3: return new byte[] { lead, f, g, h };
-        case 4: return new byte[] { lead, e, f, g, h };
-        case 5: return new byte[] { lead, d, e, f, g, h };
-        case 6: return new byte[] { lead, c, d, e, f, g, h };
-        case 7: return new byte[] { lead, b, c, d, e, f, g, h };
-        default: return new byte[]{ lead, a, b, c, d, e, f, g, h};
-        }
-    }
-
-    /**
      *
      * @param val
      * @param o
      * @param i
      * @return  the number of bytes inserted
      */
-    public static int putLong(long val, byte[] o, int i) {
+    static int putLong(long val, byte[] o, int i) {
 
         byte a = 0, b = 0, c = 0, d = 0, e = 0, f = 0, g = 0, h;
 
@@ -271,105 +105,76 @@ public class NewRLP {
         }
     }
 
-    // TODO
+    /**
+     * Can accept char, byte, short, int, or long.
+     *
+     * Note: Method encodes 0x00 as 0x00 // TODO define empty vs zero cases
+     *
+     * @param val
+     * @param dest
+     * @param destIndex
+     * @return
+     */
+    public static int encode(final long val, final byte[] dest, final int destIndex) {
+        if(ElementType.isSingleByteItem(val)) { // val >= 0 && val < ITEM_SHORT.offset
+            dest[destIndex] = (byte) val;
+            return destIndex + 1;
+        }
+
+//        byte[] source = encodeLong(val);
+//        return encodeItem(source, 0, source.length, dest, destIndex);
+
+        final int dataIndex = destIndex + 1;
+        int numLengthBytes = putLong(val, dest, dataIndex);
+        dest[destIndex] = (byte) (ITEM_SHORT.offset + numLengthBytes);
+        return dataIndex + numLengthBytes;
+    }
+
+    public static int encode(BigInteger srcBigInteger, byte[] dest, int destIndex) {
+//        if (srcBigInteger.equals(BigInteger.ZERO))
+//            return encodeLong(0, o, i);
+//        else
+//            return encodeItem(asUnsignedByteArray(srcBigInteger), o, i);
+        return encodeAsItem(srcBigInteger.toByteArray(), dest, destIndex);
+    }
+
+    public static int encode(String string, Charset charset, byte[] o, int i) {
+        return encodeAsItem(string.getBytes(charset), o, i);
+    }
+
+    public static int encodeAsItem(byte[] source, byte[] dest, int destIndex) {
+        return encodeAsItem(source, 0, source.length, dest, destIndex);
+    }
 
     /**
-     * Java arrays are limited in size to (roughly) {@code Integer#MAX_VALUE}, so {@code dataLen} is an {@code int} here.
-     * @param type
+     *
      * @param source
      * @param srcDataIndex
      * @param srcDataLen
-     * @return
+     * @param dest
+     * @param destIndex
+     * @return  the index immediately after the encoded item
      */
-    public static byte[] encodeElementLong(ElementType type, byte[] source, final int srcDataIndex, final  /*long*/int srcDataLen) {
+    public static int encodeAsItem(byte[] source, int srcDataIndex, int srcDataLen, byte[] dest, int destIndex) {
+        if(srcDataLen < LONG_DATA_THRESHOLD) {
 
-        if(!(type == ITEM_LONG || type == LIST_LONG)) {
-            throw new IllegalArgumentException("type must be " + ITEM_LONG + " or " + LIST_LONG);
-        }
-
-        int t = srcDataLen;
-
-        byte a = 0, b = 0, c = 0, d;
-
-        int n = 1;
-        d = (byte) (t & 0xFF);
-        t = t >>> Byte.SIZE;
-        if(t != 0) {
-            n = 2;
-            c = (byte) (t & 0xFF);
-            t = t >>> Byte.SIZE;
-            if(t != 0) {
-                n = 3;
-                b = (byte) (t & 0xFF);
-                t = t >>> Byte.SIZE;
-                if(t != 0) {
-                    n = 4;
-                    a = (byte) (t & 0xFF);
-                }
+            byte single;
+            if (srcDataLen == 1 && ElementType.type((single = source[srcDataIndex])) == ITEM_SINGLE_BYTE) {
+                dest[destIndex] = single;
+                return destIndex + 1;
             }
-        }
 
-        final int destDataIndex = 1 + n;
-        byte[] encoding = new byte[destDataIndex + srcDataLen];
-        encoding[0] = (byte) (type.offset + n);
-
-        // [ 0, 1, 2, 3, 4 ]
-//        case 1: return new byte[] { lead, d };
-//        case 2: return new byte[] { lead, c, d };
-//        case 3: return new byte[] { lead, b, c, d };
-//        case 4: return new byte[] { lead, a, b, c, d };
-
-        insertLengthBytes(encoding, n, a, b, c, d);
-        System.arraycopy(source, srcDataIndex, encoding, destDataIndex, srcDataLen);
-
-        return encoding;
-    }
-
-    static void insertLengthBytes(byte[] longElementEncoding, int n, byte a, byte b, byte c, byte d) {
-        int i = 1;
-        switch (n) {
-        case 4: longElementEncoding[i++] = a;
-        case 3: longElementEncoding[i++] = b;
-        case 2: longElementEncoding[i++] = c;
-        case 1: longElementEncoding[i] = d;
-        }
-    }
-
-    // TODO
-    /**
-     * Note: Method encodes 0x00 as 0x00 // TODO define empty vs zero cases
-     * @param val
-     * @param o
-     * @param i
-     * @return
-     */
-    public static int encodeLong(long val, byte[] o, int i) {
-        if(val == 0) {// special case
-//            o[i] = ElementType.ITEM_SHORT.offset;
-            o[i] = 0x00;
-            return i + 1;
-        }
-        int n = putLong(val, o, i+1);
-        o[i] = (byte) (ElementType.ITEM_SHORT.offset + n);
-        return i + 1 + n;
-    }
-
-    public static int encodeString(String string, Charset charset, byte[] o, int i) {
-        return encodeBytes(string.getBytes(charset), o, i);
-    }
-
-    public static int encodeBytes(byte[] source, byte[] o, int i) {
-        int dataIndex;
-        final int dataLen = source.length;
-        if(dataLen < LONG_DATA_THRESHOLD) {
-            dataIndex = i + 1;
-            o[i] = (byte) (ElementType.ITEM_SHORT.offset + dataLen);
+            dest[destIndex] = (byte) (ITEM_SHORT.offset + srcDataLen);
+            destIndex++;
         } else {
-            int numLengthBytes = putLong(dataLen, o, i + 1);
-            dataIndex = i + 1 + numLengthBytes;
-            o[i] = (byte) (ITEM_LONG.offset + numLengthBytes);
+//            byte[] dataLenBytes = encodeLong(srcDataLen);
+//            System.arraycopy(dataLenBytes, 0, dest, destIndex + 1, dataLenBytes.length);
+            final int lengthIndex = destIndex + 1;
+            int numLengthBytes = putLong(srcDataLen, dest, lengthIndex);
+            dest[destIndex] = (byte) (ITEM_LONG.offset + numLengthBytes);
+            destIndex = lengthIndex + numLengthBytes;
         }
-        System.arraycopy(source, 0, o, dataIndex, dataLen);
-        return dataIndex + dataLen;
+        System.arraycopy(source, srcDataIndex, dest, destIndex, srcDataLen);
+        return destIndex + srcDataLen;
     }
 }
