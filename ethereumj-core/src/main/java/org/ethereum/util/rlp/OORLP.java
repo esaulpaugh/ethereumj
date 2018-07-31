@@ -218,6 +218,10 @@ public class OORLP {
         return (byte) decodeLong(buffer, i);
     }
 
+    public static short decodeShort(byte[] buffer, int i) {
+        return (short) decodeLong(buffer, i);
+    }
+
     public static int decodeInt(byte[] buffer, int i) {
         return (int) decodeLong(buffer, i);
     }
@@ -265,8 +269,12 @@ public class OORLP {
         return (NewRLPItem) decode(buffer, index);
     }
 
+//    public static NewRLPList decodeList(byte[] buffer, int index) {
+//        return (NewRLPList) decode(buffer, index);
+//    }
+
     public static NewRLPList decodeList(byte[] buffer, int index) {
-        return (NewRLPList) decode(buffer, index);
+        return NewRLPList.fromEncoding(buffer, index);
     }
 
     public static NewRLPElement decode(byte[] buffer, int index) {

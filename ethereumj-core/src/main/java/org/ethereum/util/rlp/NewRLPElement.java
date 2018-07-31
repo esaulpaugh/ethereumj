@@ -8,7 +8,7 @@ import java.util.Arrays;
 /**
  * Created by Evo on 1/19/2017.
  */
-abstract class NewRLPElement {
+public abstract class NewRLPElement {
 
     protected final byte[] buffer;
     protected final int index;
